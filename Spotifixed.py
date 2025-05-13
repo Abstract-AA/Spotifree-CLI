@@ -11,7 +11,7 @@ class YouTubeDownloader(Gtk.Window):
     def __init__(self):
         super().__init__(title="Spotifixed")
         self.set_border_width(10)
-        self.set_default_size(845, 220)
+        self.set_default_size(845, 500)
 
         # Layout: Vertical Box
         # Layout: Vertical Box
