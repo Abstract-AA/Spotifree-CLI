@@ -86,5 +86,4 @@ main_loop() {
   done
 }
 
-echo -e "== Spotifree - CLI Player =="
 main_loop
