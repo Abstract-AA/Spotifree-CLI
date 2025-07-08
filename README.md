@@ -1,1 +1,27 @@
-# Spotifree
+<h1 align="center">🎵 Spotifree CLI</h1>
+<p align="center">
+  <strong>A minimalist YouTube music player for terminal enthusiasts</strong>
+</p>
+
+<div align="center">
+  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20WSL-blue" alt="Platform">
+  <img src="https://img.shields.io/badge/Dependencies-yt--dlp%20%7C%20mpv-green" alt="Dependencies">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+</div>
+
+## 📖 Overview
+
+Spotifree is a lightweight bash script that transforms your terminal into a YouTube music player without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. 
+
+For a smooth streaming experience, the latest verion of yt-dlp is usually required.
+
+
+## ✨ Features
+
+- 🔍 **Instant Search** - Play any song with a single command
+- 🔁 **Repeat Mode** - Replay tracks without re-searching (cached playback)
+- 🎛️ **Playback Controls** - Full MPV controls (pause/seek/volume)
+- 🚀 **Lightweight** - No GUI overhead or resource-heavy apps
+- 🛠️ **Simple Setup** - Just bash + 2 dependencies
+
+## 🖥️ Preview
