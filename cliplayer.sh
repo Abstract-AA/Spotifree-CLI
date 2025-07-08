@@ -11,10 +11,21 @@ TARGET_DIR="$HOME/Music"
 TMP_DIR="/tmp/ytmp3"
 mkdir -p "$TMP_DIR" "$TARGET_DIR"
 
+print_mpv_controls() {
+  echo -e "======== CONTROLS ========"
+  echo "  Space      : Pause/Play"
+  echo "  Left/Right : Seek -/+ 5s"
+  echo "  Down/Up    : Skip -/+ 1 min"
+  echo "  Volume     : 9 lowers 0 increases"
+  echo "  m          : Mute"
+  echo "  q          : Quit"
+  echo "=============================="
+}
+
 loop_play_mode() {
   while true; do
-    echo -n "\nEnter song name (or 'q' to quit): "
-    read query
+    echo -ne "Enter song name (or 'q' to quit): "
+    read -r query
     [[ "$query" == "q" ]] && break
 
     echo "Searching and streaming: $query"
@@ -25,12 +36,13 @@ loop_play_mode() {
       continue
     fi
 
+    print_mpv_controls
     mpv --no-video "$stream_url"
   done
 }
 
 main_menu() {
-  echo "\n== YouTube MP3 CLI Player =="
+  echo -e "== Spotifree - CLI Player =="
   loop_play_mode
 }
 
