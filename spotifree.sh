@@ -15,7 +15,7 @@ LAST_STREAM_URL=""
 LAST_QUERY=""
 declare -A SONG_CACHE  # Stores URL and query as key-value pairs
 HISTORY=()            # Order of played songs
-CACHE_LIMIT=15        # Max number of songs to keep in history
+CACHE_LIMIT=10        # Max number of songs to keep in history
 
 print_header() {
   echo "                            ____           __   _  ___                                       "
@@ -68,7 +68,7 @@ add_to_history() {
 show_history() {
   if [[ ${#HISTORY[@]} -eq 0 ]]; then
     echo "No songs in history yet!"
-    return 1
+    main_loop
   fi
   
   echo "=====[ Recently Played (Last $CACHE_LIMIT) ]====="
@@ -85,11 +85,11 @@ show_history() {
     LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
     LAST_QUERY="$selected_query"
     play_stream "${SONG_CACHE[$selected_query]}"
-    return 0
   else
     echo "Cancelled."
-    return 1
   fi
+  # Always return to main loop
+  return 0
 }
 
 search_and_play() {
@@ -111,8 +111,7 @@ search_and_play() {
   return 0
 }
 
-main_loop() {
-  print_header	
+main_loop() {	
   while true; do
     echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history): "
     read -r input
@@ -132,6 +131,7 @@ main_loop() {
         ;;
       h)
         show_history
+        continue  # Ensure we always return to the prompt
         ;;
       *)
         search_and_play "$input"
@@ -140,4 +140,5 @@ main_loop() {
   done
 }
 
+print_header
 main_loop
