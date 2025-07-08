@@ -15,15 +15,28 @@ mkdir -p "$TMP_DIR" "$TARGET_DIR"
 LAST_STREAM_URL=""
 LAST_QUERY=""
 
+print_header() {
+  echo "                            ____           __   _  ___                                       "
+  echo "  ____ ____ ____ ____      / __/___  ___  / /_ (_)/ _/____ ___  ___       ____ ____ ____ ____"
+  echo " /___//___//___//___/     _\ \ / _ \/ _ \/ __// // _// __// -_)/ -_)     /___//___//___//___/"
+  echo "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
+  echo "                             /_/                                                             "
+  echo "---------------------------------------------------------------------------------------------"
+  echo "                                 Your free CLI Music Streamer                                "
+  echo "---------------------------------------------------------------------------------------------"
+  echo
+}
+
 print_mpv_controls() {
-  echo -e "======== CONTROLS ========"
-  echo "  Space      : Pause/Play"
-  echo "  Left/Right : Seek -/+ 5s"
-  echo "  Down/Up    : Skip -/+ 1 min"
-  echo "  Volume     : 9 lowers 0 increases"
-  echo "  m          : Mute"
-  echo "  q          : Quit"
-  echo "=============================="
+  echo "==========[ PLAYBACK CONTROLS ]=========="
+  echo "      Space      : Play/Pause"
+  echo "      ←/→        : Seek -/+ 5 seconds"
+  echo "      ↓/↑        : Seek -/+ 1 minute"
+  echo "      9/0        : Volume down/up"
+  echo "      m          : Mute toggle"
+  echo "      q          : Quit player"
+  echo "========================================="
+  echo
 }
 
 play_stream() {
@@ -51,6 +64,7 @@ search_and_play() {
 }
 
 main_loop() {
+  print_header	
   while true; do
     echo -ne "Enter song name (or 'q' to quit, 'r' to repeat): "
     read -r input
