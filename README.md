@@ -25,3 +25,15 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 - 🛠️ **Simple Setup** - Just bash + 2 dependencies
 
 ## 🖥️ Preview
+
+## 📦 Installation
+
+```bash
+# Install dependencies
+sudo apt install yt-dlp mpv  # Debian/Ubuntu
+brew install yt-dlp mpv      # macOS
+
+# Download Spotifree
+wget https://raw.githubusercontent.com/yourusername/spotifree/main/spotifree.sh
+chmod +x spotifree.sh
+./spotifree.sh
