@@ -36,6 +36,6 @@ sudo apt install yt-dlp mpv  # Debian/Ubuntu
 brew install yt-dlp mpv      # macOS
 
 # Download Spotifree
-wget https://raw.githubusercontent.com/Abstract-AA/Spotifree/270927bdf63aaa492c4cd1dfb8f8b5be2f469e9c/spotifree.sh
+wget https://github.com/Abstract-AA/Spotifree/blob/6726e6d70c23b7ddaeb604a770b029bdbd62ad4e/spotifree.sh
 chmod +x spotifree.sh
 ./spotifree.sh
