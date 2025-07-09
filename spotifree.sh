@@ -118,7 +118,6 @@ main_loop() {
     
     case "$input" in
       q) 
-        echo "Thanks for using Spotifree!"
         exit 0
         ;;
       r)
