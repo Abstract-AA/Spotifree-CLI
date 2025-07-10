@@ -42,3 +42,7 @@ brew install yt-dlp mpv      # macOS
 wget https://github.com/Abstract-AA/Spotifree/blob/618720012e2b0a9ea1656f4b6ddc0445c28533fe/spotifree.sh
 chmod +x spotifree.sh
 ./spotifree.sh
+
+## Future plans
+
+I intend to add the possibility of creating playlists, also a more polished interface for download management is being considered.
