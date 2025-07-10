@@ -32,19 +32,64 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 ## 📦 Installation
 
-```bash
 # Install dependencies
-sudo apt install yt-dlp mpv  # Debian/Ubuntu
-sudo dnf install yt-dlp mpv #Fedora and its derivatives
-sudo apk update && sudo apk add mpv yt-dlp # Alpine Linux
-brew install yt-dlp mpv      # macOS
 
-# Download Spotifree
+First, in a system with Bash, run the foolowing:
+
+```bash
+sudo apt install yt-dlp mpv                 # Debian/Ubuntu
+sudo dnf install yt-dlp mpv                 # Fedora and its derivatives
+sudo apk update && sudo apk add mpv yt-dlp  # Alpine Linux
+sudo pacman -S mpv && sudo pacman -S yt-dlp #Arch linux and its derivatives
+brew install yt-dlp mpv                     # macOS
+```
+Then, move on to downloading the main file.
+
+```bash
 wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree.sh 
      
 chmod +x spotifree.sh
 
 ./spotifree.sh
+
+```
+
+Note: Some distributions have older versions of yt-dlp, and this can cause issues when running the app. Therefore, in this case its ideal to download yt-dlp in a python enviroment:
+
+```bash
+# ====== INSTALL LATEST yt-dlp ON ARCH / FEDORA / DEBIAN/UBUNTU ======
+
+# === 0. PREREQUISITES ===
+# Make sure Python and pip are installed
+
+sudo pacman -S python python-pip # Arch
+
+sudo apt install python3 python3-pip # Debian/Ubuntu
+
+sudo dnf install python3 python3-pip # Fedora
+
+# === 1st METHOD: pipx (Recommended) ===
+
+sudo pacman -S pipx # Arch
+
+sudo apt install pipx # Debian/Ubuntu
+
+sudo dnf install pipx # Fedora
+
+pipx install yt-dlp  # Install yt-dlp via pipx
+
+pipx upgrade yt-dlp # (To upgrade later)
+
+# ====== 2nd METHOD: virtualenv (Manual isolation) ======
+
+pip install --user virtualenv # Install virtualenv if needed
+
+python3 -m venv yt-dlp-env
+source yt-dlp-env/bin/activate  # Create and activate virtual environment
+
+pip install yt-dlp # Install yt-dlp inside the venv
+
+deactivate # Deactivate environment when done
 
 ```
 
