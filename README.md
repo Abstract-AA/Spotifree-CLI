@@ -51,7 +51,7 @@ chmod +x spotifree.sh
 
 I intend to add the possibility of creating playlists, also a more polished interface for download management is being considered.
 
-## Legal Disclaimer
+## Legal Disclaimer & Ethical Use
 
 This project, Spotifree CLI, is provided for **educational and personal use only**. By using this software, you acknowledge and agree to the following:
 
@@ -66,3 +66,8 @@ This project, Spotifree CLI, is provided for **educational and personal use only
 **Important**: YouTube/Spotify's Terms of Service prohibit unauthorized access to their content. This tool is not affiliated with or endorsed by YouTube, Spotify, or any content providers.
 
 Consult legal counsel if uncertain about compliance in your region.
+
+Furthermore, by using this software, the user should understand and agree to:
+- Support artists through official platforms
+- Use this tool only for content you legally own or have rights to access
+- Not redistribute downloaded content
