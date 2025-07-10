@@ -37,8 +37,10 @@ sudo apk update && sudo apk add mpv yt-dlp # Alpine Linux
 brew install yt-dlp mpv      # macOS
 
 # Download Spotifree
-wget https://github.com/Abstract-AA/Spotifree/blob/618720012e2b0a9ea1656f4b6ddc0445c28533fe/spotifree.sh
+wget https://github.com/Abstract-AA/Spotifree/blob/247e019989ce10681ebf5c62c23739989bda237f/spotifree.sh
+     
 chmod +x spotifree.sh
+
 ./spotifree.sh
 
 ```
