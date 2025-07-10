@@ -15,9 +15,9 @@ Spotifree is a lightweight bash script that transforms your terminal into a YouT
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-34-15.png)
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-42-16.png)
 
 
 ## Features
@@ -40,7 +40,7 @@ sudo apk update && sudo apk add mpv yt-dlp # Alpine Linux
 brew install yt-dlp mpv      # macOS
 
 # Download Spotifree
-wget 
+wget https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/spotifree.sh
      
 chmod +x spotifree.sh
 
@@ -50,7 +50,7 @@ chmod +x spotifree.sh
 
 ## Future plans
 
-I intend to add the possibility of creating playlists, also a more polished interface for download management is being considered.
+I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered.
 
 ## Legal Disclaimer & Ethical Use
 
