@@ -32,9 +32,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 ## 📦 Installation
 
-To install the dependencies
-
-First, in a system with Bash, run the foolowing:
+First, to install the dependencies run the foolowing in a system with Bash:
 
 ```bash
 sudo apt install yt-dlp mpv                 # Debian/Ubuntu
