@@ -63,8 +63,6 @@ This project, Spotifree CLI, is provided for **educational and personal use only
 
 4. **No Warranty**: The developer assumes no liability for misuse of this tool or copyright infringement by end users.
 
-5. **DMCA**: This project complies with the Digital Millennium Copyright Act. Copyright holders may submit takedown requests via GitHub's DMCA process.
-
 **Important**: YouTube/Spotify's Terms of Service prohibit unauthorized access to their content. This tool is not affiliated with or endorsed by YouTube, Spotify, or any content providers.
 
 Consult legal counsel if uncertain about compliance in your region.
