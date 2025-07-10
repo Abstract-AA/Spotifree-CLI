@@ -32,7 +32,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 ## 📦 Installation
 
-# Install dependencies
+To install the dependencies
 
 First, in a system with Bash, run the foolowing:
 
