@@ -97,28 +97,35 @@ download_last() {
     echo "No song to download! Please play a song first."
     return 1
   fi
-  
+
   echo "Downloading: $LAST_QUERY"
   echo "Destination: $TARGET_DIR"
   
-  # Create temp file to check if download succeeds
-  temp_file="${TMP_DIR}/spotifree_download.mp3"
-  
-  if yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 64K \
-     -o "$temp_file" "$LAST_STREAM_URL"; then
-     
-    final_filename=$(yt-dlp --get-filename -o "%(title)s.%(ext)s" "$LAST_STREAM_URL")
-    final_path="${TARGET_DIR}/${final_filename}"
-    
-    # Move to final destination
-    mv "$temp_file" "$final_path"
-    echo "Successfully downloaded: $final_path"
-    return 0
-  else
+  # Get clean filename
+  clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
+  temp_file="${TMP_DIR}/${clean_title}.webm"
+  final_file="${TARGET_DIR}/${clean_title}.mp3"
+
+  # Download with progress bar only
+  yt-dlp --quiet --no-warnings -f bestaudio -o "$temp_file" "$LAST_STREAM_URL" || {
     echo "Download failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     return 1
-  fi
+  }
+
+  # Convert to MP3
+  echo -n "Converting to MP3..."
+  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file" && {
+    echo " Done!"
+    rm "$temp_file"
+    echo "Successfully downloaded: $final_file"
+    return 0
+  } || {
+    echo "Conversion failed!"
+    [ -f "$temp_file" ] && rm "$temp_file"
+    [ -f "$final_file" ] && rm "$final_file"
+    return 1
+  }
 }
 
 search_and_play() {
@@ -141,14 +148,12 @@ search_and_play() {
 }
 
 main_loop() {
-  print_header
   while true; do
     echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song): "
     read -r input
     
     case "$input" in
       q)
-        echo "Thanks for using Spotifree!"
         exit 0
         ;;
       r)
@@ -164,7 +169,7 @@ main_loop() {
         ;;
       d)
         if ! download_last; then
-          # Download failed but we continue the loop
+          # The loop continues even if the download fails
           continue
         fi
         ;;
