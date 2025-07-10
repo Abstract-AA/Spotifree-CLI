@@ -24,8 +24,9 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 - **Instant Search** - Play any song with a single command
 - **Download Audio files** - Any played song can be downloaded
+- **Playlists** - Create playlists by write multiple song names separated by commas
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
-- **Playback Controls** - Full MPV controls (pause/seek/volume)
+- **Playback Controls** - Full MPV controls (pause/seek/volume/loop)
 - **Lightweight** - No GUI overhead or resource-heavy apps
 - **Simple Setup** - Just bash + 2 dependencies
 
