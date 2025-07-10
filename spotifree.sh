@@ -30,14 +30,14 @@ print_header() {
 }
 
 print_mpv_controls() {
-  echo "==========[ PLAYBACK CONTROLS ]=========="
-  echo "      Space      : Play/Pause"
-  echo "      ←/→        : Seek -/+ 5 seconds"
-  echo "      ↓/↑        : Seek -/+ 1 minute"
-  echo "      9/0        : Volume down/up"
-  echo "      m          : Mute toggle"
-  echo "      q          : Quit player"
-  echo "========================================="
+  echo "                          ==========[ PLAYBACK CONTROLS ]=========="
+  echo "                                Space      : Play/Pause"
+  echo "                                ←/→        : Seek -/+ 5 seconds"
+  echo "                                ↓/↑        : Seek -/+ 1 minute"
+  echo "                                9/0        : Volume down/up"
+  echo "                                m          : Mute toggle"
+  echo "                                q          : Quit player"
+  echo "                          ========================================="
   echo
 }
 
