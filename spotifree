@@ -18,7 +18,17 @@ HISTORY=()
 CACHE_LIMIT=20
 LOOP_MODE=false
 
+# Display management
+HEADER_LINES=8  # Number of lines in the header
+
+clear_content() {
+  tput cup $HEADER_LINES 0
+  tput ed
+}
+
 print_header() {
+  # Move to top but don't clear entire terminal
+  tput cup 0 0
   echo "                            ____           __   _  ___                                       "
   echo "  ____ ____ ____ ____      / __/___  ___  / /_ (_)/ _/____ ___  ___       ____ ____ ____ ____"
   echo " /___//___//___//___/     _\ \ / _ \/ _ \/ __// // _// __// -_)/ -_)     /___//___//___//___/"
@@ -42,23 +52,40 @@ print_mpv_controls() {
   echo
 }
 
+refresh_input_prompt() {
+  tput cup $((HEADER_LINES + 1)) 0
+  tput ed
+  echo "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song):"
+  echo "(Add '-r' at the end for loop play. For playlists, write song names separated by commas)"
+  echo -n ">>> "
+}
+
 play_stream() {
   local stream_url="$1"
   local loop="$2"
+  
+  clear_content
   print_mpv_controls
   if [ "$loop" = true ]; then
     echo "🔁 Loop mode activated"
+  fi
+  
+  if [ "$loop" = true ]; then
     mpv --no-video --loop "$stream_url"
   else
     mpv --no-video "$stream_url"
   fi
+  
+  # Restore interface after playback
+  print_header
+  refresh_input_prompt
 }
 
 add_to_history() {
   local query="$1"
   local url="$2"
   
-  local clean_query="${query%% -r}" # This will remove -r flag if present before adding to history
+  local clean_query="${query%% -r}"
   
   if [[ -z "${SONG_CACHE[$clean_query]}" ]]; then
     SONG_CACHE["$clean_query"]="$url"
@@ -73,8 +100,11 @@ add_to_history() {
 }
 
 show_history() {
+  clear_content
+  
   if [[ ${#HISTORY[@]} -eq 0 ]]; then
     echo "No songs in history yet!"
+    sleep 2
     return 1
   fi
   
@@ -86,10 +116,13 @@ show_history() {
   
   echo -ne "Enter number to replay (or any key to cancel): "
   read -r choice
+  
   if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#HISTORY[@]} ]]; then
     local selected_query="${HISTORY[$((choice-1))]}"
+    clear_content
     echo -n "Replay options: [1] Normal  [2] Loop  [3] Cancel: "
     read -r mode
+    
     case "$mode" in
       1)
         echo "Playing: $selected_query"
@@ -110,12 +143,17 @@ show_history() {
   else
     echo "Cancelled."
   fi
+  
+  refresh_input_prompt
   return 0
 }
 
 download_last() {
+  clear_content
+  
   if [ -z "$LAST_STREAM_URL" ]; then
     echo "No song to download! Please play a song first."
+    sleep 2
     return 1
   fi
 
@@ -129,6 +167,7 @@ download_last() {
   yt-dlp --quiet --no-warnings -f bestaudio -o "$temp_file" "$LAST_STREAM_URL" || {
     echo "Download failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
+    sleep 2
     return 1
   }
 
@@ -137,11 +176,13 @@ download_last() {
     echo " Done!"
     rm "$temp_file"
     echo "Successfully downloaded: $final_file"
+    sleep 2
     return 0
   } || {
     echo "Conversion failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     [ -f "$final_file" ] && rm "$final_file"
+    sleep 2
     return 1
   }
 }
@@ -152,14 +193,21 @@ process_song() {
   
   if [[ "$query" == *" -r" ]]; then
     loop=true
-    query="${query%% -r}" # This Remove the -r flag, keep this line
+    query="${query%% -r}"
   fi
 
+  clear_content
   echo "Searching and streaming: $query"
-  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
+  
+  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || {
+    echo "No results found for: $query"
+    sleep 2
+    return 1
+  }
 
   if [ -z "$stream_url" ]; then
     echo "No results found for: $query"
+    sleep 2
     return 1
   fi
 
@@ -172,11 +220,11 @@ process_song() {
 }
 
 main_loop() {
+  # Initial setup
   print_header
+  refresh_input_prompt
+  
   while true; do
-    echo "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song):"
-    echo "(Add '-r' at the end for loop play. For playlists, write song names separated by commas)"
-    echo -n ">>> "
     read -r input
     
     case "$input" in
@@ -185,11 +233,17 @@ main_loop() {
         ;;
       r)
         if [ -z "$LAST_STREAM_URL" ]; then
+          clear_content
           echo "No song to repeat! Please search for a song first."
+          sleep 2
+          refresh_input_prompt
           continue
         fi
+        
+        clear_content
         echo -n "Repeat options: [1] Normal  [2] Loop  [3] Cancel: "
         read -r mode
+        
         case "$mode" in
           1)
             echo "Repeating: $LAST_QUERY"
@@ -203,27 +257,30 @@ main_loop() {
             echo "Cancelled."
             ;;
         esac
+        refresh_input_prompt
         ;;
       h)
         show_history
         ;;
       d)
         if ! download_last; then
+          refresh_input_prompt
           continue
         fi
+        refresh_input_prompt
         ;;
       *)
-        # this will handle the comma-separated playlist
         if [[ "$input" == *,* ]]; then
           IFS=',' read -ra songs <<< "$input"
           for song in "${songs[@]}"; do
-            song=$(echo "$song" | xargs) # this trims whitespace has to be here
+            song=$(echo "$song" | xargs)
             [ -z "$song" ] && continue
             process_song "$song"
           done
         else
           process_song "$input"
         fi
+        refresh_input_prompt
         ;;
     esac
   done
