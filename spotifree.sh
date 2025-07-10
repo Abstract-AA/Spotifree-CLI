@@ -98,7 +98,7 @@ download_last() {
     return 1
   fi
 
-  echo "Downloading: $LAST_QUERY"
+  echo "Downloading: $LAST_QUERY , please wait..."
   echo "Destination: $TARGET_DIR"
   
   # Get clean filename
