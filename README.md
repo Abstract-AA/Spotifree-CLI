@@ -48,7 +48,7 @@ wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main
      
 chmod +x spotifree.sh
 
-./spotifree.sh
+./spotifree
 
 ```
 
