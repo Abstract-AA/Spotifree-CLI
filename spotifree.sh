@@ -13,9 +13,10 @@ mkdir -p "$TMP_DIR" "$TARGET_DIR"
 # Cache variables
 LAST_STREAM_URL=""
 LAST_QUERY=""
-declare -A SONG_CACHE  # Stores URL and query as key-value pairs
-HISTORY=()            # Order of played songs
-CACHE_LIMIT=10        # Max number of songs to keep in history
+declare -A SONG_CACHE
+HISTORY=()
+CACHE_LIMIT=20
+LOOP_MODE=false
 
 print_header() {
   echo "                            ____           __   _  ___                                       "
@@ -30,37 +31,43 @@ print_header() {
 }
 
 print_mpv_controls() {
-  echo "                          ==========[ PLAYBACK CONTROLS ]=========="
+  echo "                         ===========[ PLAYBACK CONTROLS ]==========="
   echo "                                Space      : Play/Pause"
   echo "                                ←/→        : Seek -/+ 5 seconds"
   echo "                                ↓/↑        : Seek -/+ 1 minute"
   echo "                                9/0        : Volume down/up"
   echo "                                m          : Mute toggle"
   echo "                                q          : Quit player"
-  echo "                          ========================================="
+  echo "                         ==========================================="
   echo
 }
 
 play_stream() {
   local stream_url="$1"
+  local loop="$2"
   print_mpv_controls
-  mpv --no-video "$stream_url"
+  if [ "$loop" = true ]; then
+    echo "🔁 Loop mode activated"
+    mpv --no-video --loop "$stream_url"
+  else
+    mpv --no-video "$stream_url"
+  fi
 }
 
 add_to_history() {
   local query="$1"
   local url="$2"
   
-  # Add to cache if not already present
-  if [[ -z "${SONG_CACHE[$query]}" ]]; then
-    SONG_CACHE["$query"]="$url"
-    HISTORY+=("$query")
+  local clean_query="${query%% -r}" # This will remove -r flag if present before adding to history
+  
+  if [[ -z "${SONG_CACHE[$clean_query]}" ]]; then
+    SONG_CACHE["$clean_query"]="$url"
+    HISTORY+=("$clean_query")
     
-    # Maintain cache limit
     if [[ ${#HISTORY[@]} -gt $CACHE_LIMIT ]]; then
       local oldest_query="${HISTORY[0]}"
       unset SONG_CACHE["$oldest_query"]
-      HISTORY=("${HISTORY[@]:1}") # Remove first element
+      HISTORY=("${HISTORY[@]:1}")
     fi
   fi
 }
@@ -68,10 +75,10 @@ add_to_history() {
 show_history() {
   if [[ ${#HISTORY[@]} -eq 0 ]]; then
     echo "No songs in history yet!"
-    main_loop
+    return 1
   fi
   
-  echo "=====[ Recently Played (Last $CACHE_LIMIT) ]====="
+  echo "=========[ Recently Played (Last $CACHE_LIMIT) ]========="
   for i in "${!HISTORY[@]}"; do 
     echo "  $((i+1)). ${HISTORY[$i]}"
   done
@@ -81,14 +88,28 @@ show_history() {
   read -r choice
   if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#HISTORY[@]} ]]; then
     local selected_query="${HISTORY[$((choice-1))]}"
-    echo "Replaying: $selected_query"
-    LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
-    LAST_QUERY="$selected_query"
-    play_stream "${SONG_CACHE[$selected_query]}"
+    echo -n "Replay options: [1] Normal  [2] Loop  [3] Cancel: "
+    read -r mode
+    case "$mode" in
+      1)
+        echo "Playing: $selected_query"
+        LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
+        LAST_QUERY="$selected_query"
+        play_stream "${SONG_CACHE[$selected_query]}" false
+        ;;
+      2)
+        echo "Looping: $selected_query"
+        LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
+        LAST_QUERY="$selected_query"
+        play_stream "${SONG_CACHE[$selected_query]}" true
+        ;;
+      *)
+        echo "Cancelled."
+        ;;
+    esac
   else
     echo "Cancelled."
   fi
-  # Always return to main loop
   return 0
 }
 
@@ -101,19 +122,16 @@ download_last() {
   echo "Downloading: $LAST_QUERY , please wait..."
   echo "Destination: $TARGET_DIR"
   
-  # Get clean filename
   clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
   temp_file="${TMP_DIR}/${clean_title}.webm"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  # Download with progress bar only
   yt-dlp --quiet --no-warnings -f bestaudio -o "$temp_file" "$LAST_STREAM_URL" || {
     echo "Download failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     return 1
   }
 
-  # Convert to MP3
   echo -n "Converting to MP3..."
   ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file" && {
     echo " Done!"
@@ -128,29 +146,36 @@ download_last() {
   }
 }
 
-search_and_play() {
+process_song() {
   local query="$1"
-  echo "Searching and streaming for: $query"
+  local loop=false
+  
+  if [[ "$query" == *" -r" ]]; then
+    loop=true
+    query="${query%% -r}" # This Remove the -r flag, keep this line
+  fi
+
+  echo "Searching and streaming: $query"
   stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
 
   if [ -z "$stream_url" ]; then
-    echo "No results found."
+    echo "No results found for: $query"
     return 1
   fi
 
-  # Cache the URL and query
   LAST_STREAM_URL="$stream_url"
   LAST_QUERY="$query"
   add_to_history "$query" "$stream_url"
-
-  play_stream "$stream_url"
+  
+  play_stream "$stream_url" "$loop"
   return 0
 }
 
 main_loop() {
+  print_header
   while true; do
-    echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song): "
-    echo
+    echo "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song):"
+    echo "(Add '-r' at the end for loop play. For playlists, write song names separated by commas)"
     echo -n ">>> "
     read -r input
     
@@ -163,24 +188,45 @@ main_loop() {
           echo "No song to repeat! Please search for a song first."
           continue
         fi
-        echo "Repeating: $LAST_QUERY"
-        play_stream "$LAST_STREAM_URL"
+        echo -n "Repeat options: [1] Normal  [2] Loop  [3] Cancel: "
+        read -r mode
+        case "$mode" in
+          1)
+            echo "Repeating: $LAST_QUERY"
+            play_stream "$LAST_STREAM_URL" false
+            ;;
+          2)
+            echo "Looping: $LAST_QUERY"
+            play_stream "$LAST_STREAM_URL" true
+            ;;
+          *)
+            echo "Cancelled."
+            ;;
+        esac
         ;;
       h)
         show_history
         ;;
       d)
         if ! download_last; then
-          # The loop continues even if the download fails
           continue
         fi
         ;;
       *)
-        search_and_play "$input"
+        # this will handle the comma-separated playlist
+        if [[ "$input" == *,* ]]; then
+          IFS=',' read -ra songs <<< "$input"
+          for song in "${songs[@]}"; do
+            song=$(echo "$song" | xargs) # this trims whitespace has to be here
+            [ -z "$song" ] && continue
+            process_song "$song"
+          done
+        else
+          process_song "$input"
+        fi
         ;;
     esac
   done
 }
 
-print_header
 main_loop
