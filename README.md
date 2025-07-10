@@ -15,41 +15,85 @@ Spotifree is a lightweight bash script that transforms your terminal into a YouT
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree/blob/d72fbbb61e06764d9fdd18b47efd83b3f838c66e/Screenshot%20from%202025-07-10%2017-43-57.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-34-15.png)
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree/blob/d72fbbb61e06764d9fdd18b47efd83b3f838c66e/Screenshot%20from%202025-07-10%2017-46-49.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-42-16.png)
 
 
 ## Features
 
 - **Instant Search** - Play any song with a single command
 - **Download Audio files** - Any played song can be downloaded
+- **Playlists** - Create playlists by write multiple song names separated by commas
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
-- **Playback Controls** - Full MPV controls (pause/seek/volume)
+- **Playback Controls** - Full MPV controls (pause/seek/volume/loop)
 - **Lightweight** - No GUI overhead or resource-heavy apps
 - **Simple Setup** - Just bash + 2 dependencies
 
 ## 📦 Installation
 
+First, to install the dependencies run the following in a system with Bash:
+
 ```bash
-# Install dependencies
-sudo apt install yt-dlp mpv  # Debian/Ubuntu
-sudo dnf install yt-dlp mpv #Fedora and its derivatives
-sudo apk update && sudo apk add mpv yt-dlp # Alpine Linux
-brew install yt-dlp mpv      # macOS
+sudo apt install yt-dlp mpv                 # Debian/Ubuntu
+sudo dnf install yt-dlp mpv                 # Fedora and its derivatives
+sudo apk update && sudo apk add mpv yt-dlp  # Alpine Linux
+sudo pacman -S mpv && sudo pacman -S yt-dlp #Arch linux and its derivatives
+brew install yt-dlp mpv                     # macOS
+```
+Then, move on to downloading the main file.
 
-# Download Spotifree
-wget https://github.com/Abstract-AA/Spotifree/blob/4857c00116a90d25d82ef891826d5225471411f6/spotifree.sh
+```bash
+wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree
      
-chmod +x spotifree.sh
+chmod +x spotifree
 
-./spotifree.sh
+./spotifree
+
+```
+
+Note: Some distributions have older versions of yt-dlp, and this can cause issues when running the app. Therefore, in this case its ideal to download yt-dlp in a python enviroment:
+
+```bash
+# ====== INSTALL LATEST yt-dlp ON ARCH / FEDORA / DEBIAN/UBUNTU ======
+
+# === 0. PREREQUISITES ===
+# Make sure Python and pip are installed
+
+sudo pacman -S python python-pip # Arch
+
+sudo apt install python3 python3-pip # Debian/Ubuntu
+
+sudo dnf install python3 python3-pip # Fedora
+
+# === 1st METHOD: pipx (Recommended) ===
+
+sudo pacman -S pipx # Arch
+
+sudo apt install pipx # Debian/Ubuntu
+
+sudo dnf install pipx # Fedora
+
+pipx install yt-dlp  # Install yt-dlp via pipx
+
+pipx upgrade yt-dlp # (To upgrade later)
+
+# ====== 2nd METHOD: virtualenv (Manual isolation) ======
+
+pip install --user virtualenv # Install virtualenv if needed
+
+python3 -m venv yt-dlp-env
+source yt-dlp-env/bin/activate  # Create and activate virtual environment
+
+pip install yt-dlp # Install yt-dlp inside the venv
+
+deactivate # Deactivate environment when done
 
 ```
 
 ## Future plans
 
-I intend to add the possibility of creating playlists, also a more polished interface for download management is being considered.
+I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered.
 
 ## Legal Disclaimer & Ethical Use
 
