@@ -33,6 +33,8 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 ```bash
 # Install dependencies
 sudo apt install yt-dlp mpv  # Debian/Ubuntu
+sudo dnf install yt-dlp mpv #Fedora and its derivatives
+sudo apk update && sudo apk add mpv yt-dlp # Alpine Linux
 brew install yt-dlp mpv      # macOS
 
 # Download Spotifree
