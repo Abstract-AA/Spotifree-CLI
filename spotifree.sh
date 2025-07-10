@@ -92,32 +92,63 @@ show_history() {
   return 0
 }
 
+download_last() {
+  if [ -z "$LAST_STREAM_URL" ]; then
+    echo "No song to download! Please play a song first."
+    return 1
+  fi
+  
+  echo "Downloading: $LAST_QUERY"
+  echo "Destination: $TARGET_DIR"
+  
+  # Create temp file to check if download succeeds
+  temp_file="${TMP_DIR}/spotifree_download.mp3"
+  
+  if yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 64K \
+     -o "$temp_file" "$LAST_STREAM_URL"; then
+     
+    final_filename=$(yt-dlp --get-filename -o "%(title)s.%(ext)s" "$LAST_STREAM_URL")
+    final_path="${TARGET_DIR}/${final_filename}"
+    
+    # Move to final destination
+    mv "$temp_file" "$final_path"
+    echo "Successfully downloaded: $final_path"
+    return 0
+  else
+    echo "Download failed!"
+    [ -f "$temp_file" ] && rm "$temp_file"
+    return 1
+  fi
+}
+
 search_and_play() {
   local query="$1"
   echo "Searching and streaming: $query"
-  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query")
-  
+  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
+
   if [ -z "$stream_url" ]; then
     echo "No results found."
     return 1
   fi
-  
+
   # Cache the URL and query
   LAST_STREAM_URL="$stream_url"
   LAST_QUERY="$query"
   add_to_history "$query" "$stream_url"
-  
+
   play_stream "$stream_url"
   return 0
 }
 
-main_loop() {	
+main_loop() {
+  print_header
   while true; do
-    echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history): "
+    echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song): "
     read -r input
     
     case "$input" in
-      q) 
+      q)
+        echo "Thanks for using Spotifree!"
         exit 0
         ;;
       r)
@@ -130,7 +161,12 @@ main_loop() {
         ;;
       h)
         show_history
-        continue  # Ensure we always return to the prompt
+        ;;
+      d)
+        if ! download_last; then
+          # Download failed but we continue the loop
+          continue
+        fi
         ;;
       *)
         search_and_play "$input"
