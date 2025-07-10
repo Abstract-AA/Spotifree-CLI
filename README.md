@@ -17,7 +17,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 ## Preview
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree/blob/62aed69e94f47732674bf692ddd973492c18acdc/Screenshot%20from%202025-07-09%2014-06-01.png)
+![Alt Text]()
 
 
 ## ✨ Features
