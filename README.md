@@ -46,7 +46,7 @@ Then, move on to downloading the main file.
 ```bash
 wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree
      
-chmod +x spotifree.sh
+chmod +x spotifree
 
 ./spotifree
 
