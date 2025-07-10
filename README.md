@@ -17,16 +17,17 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 
 ## Preview
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree/blob/ef3fc0156d670a679d79a18e5b7c5295990a29b5/Screenshot%20from%202025-07-10%2016-55-22.png)
 
 
-## ✨ Features
+## Features
 
-- 🔍 **Instant Search** - Play any song with a single command
-- 🔁 **Repeat Mode** - Replay tracks without re-searching (cached playback)
-- 🎛️ **Playback Controls** - Full MPV controls (pause/seek/volume)
-- 🚀 **Lightweight** - No GUI overhead or resource-heavy apps
-- 🛠️ **Simple Setup** - Just bash + 2 dependencies
+- **Instant Search** - Play any song with a single command
+- **Download Audio files** - Any played song can be downloaded
+- **Repeat Mode** - Replay tracks without re-searching (cached playback)
+- **Playback Controls** - Full MPV controls (pause/seek/volume)
+- **Lightweight** - No GUI overhead or resource-heavy apps
+- **Simple Setup** - Just bash + 2 dependencies
 
 ## 📦 Installation
 
