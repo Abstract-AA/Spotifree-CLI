@@ -130,7 +130,7 @@ download_last() {
 
 search_and_play() {
   local query="$1"
-  echo "Searching and streaming: $query"
+  echo "Searching and streaming for: $query"
   stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
 
   if [ -z "$stream_url" ]; then
@@ -150,6 +150,8 @@ search_and_play() {
 main_loop() {
   while true; do
     echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song): "
+    echo
+    echo -n ">>> "
     read -r input
     
     case "$input" in
