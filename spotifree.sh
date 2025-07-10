@@ -92,32 +92,68 @@ show_history() {
   return 0
 }
 
+download_last() {
+  if [ -z "$LAST_STREAM_URL" ]; then
+    echo "No song to download! Please play a song first."
+    return 1
+  fi
+
+  echo "Downloading: $LAST_QUERY"
+  echo "Destination: $TARGET_DIR"
+  
+  # Get clean filename
+  clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
+  temp_file="${TMP_DIR}/${clean_title}.webm"
+  final_file="${TARGET_DIR}/${clean_title}.mp3"
+
+  # Download with progress bar only
+  yt-dlp --quiet --no-warnings -f bestaudio -o "$temp_file" "$LAST_STREAM_URL" || {
+    echo "Download failed!"
+    [ -f "$temp_file" ] && rm "$temp_file"
+    return 1
+  }
+
+  # Convert to MP3
+  echo -n "Converting to MP3..."
+  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file" && {
+    echo " Done!"
+    rm "$temp_file"
+    echo "Successfully downloaded: $final_file"
+    return 0
+  } || {
+    echo "Conversion failed!"
+    [ -f "$temp_file" ] && rm "$temp_file"
+    [ -f "$final_file" ] && rm "$final_file"
+    return 1
+  }
+}
+
 search_and_play() {
   local query="$1"
   echo "Searching and streaming: $query"
-  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query")
-  
+  stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
+
   if [ -z "$stream_url" ]; then
     echo "No results found."
     return 1
   fi
-  
+
   # Cache the URL and query
   LAST_STREAM_URL="$stream_url"
   LAST_QUERY="$query"
   add_to_history "$query" "$stream_url"
-  
+
   play_stream "$stream_url"
   return 0
 }
 
-main_loop() {	
+main_loop() {
   while true; do
-    echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history): "
+    echo -ne "Enter song name (or 'q' to quit, 'r' to repeat, 'h' for history, 'd' to download last song): "
     read -r input
     
     case "$input" in
-      q) 
+      q)
         exit 0
         ;;
       r)
@@ -130,7 +166,12 @@ main_loop() {
         ;;
       h)
         show_history
-        continue  # Ensure we always return to the prompt
+        ;;
+      d)
+        if ! download_last; then
+          # The loop continues even if the download fails
+          continue
+        fi
         ;;
       *)
         search_and_play "$input"
