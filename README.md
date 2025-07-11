@@ -93,7 +93,7 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered.
+I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered. In addition, a song suggestion function and multiple possible results beeing displayed after a fuzzy search is also in the works. 
 
 ## Legal Disclaimer & Ethical Use
 
