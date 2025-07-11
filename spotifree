@@ -96,7 +96,7 @@ show_history() {
     read -r mode
     case "$mode" in
       1)
-        echo "Playing: $selected_query"
+        echo "                  Playing: $selected_query"
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" false
