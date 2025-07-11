@@ -54,6 +54,7 @@ play_stream() {
   else
     mpv --no-video "$stream_url"
   fi
+  sleep 1
 }
 
 add_to_history() {
@@ -306,6 +307,11 @@ main_loop() {
         settings_menu
         ;;
       *)
+        if [[ -z "$input" ]]; then
+         echo "                  No input entered. Returning to menu..."
+         sleep 1
+         continue
+        fi
         # this will handle the comma-separated playlist
         if [[ "$input" == *,* ]]; then
           IFS=',' read -ra songs <<< "$input"
