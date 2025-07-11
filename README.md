@@ -11,13 +11,15 @@
 
 ## Overview
 
-Spotifree is a lightweight bash script that transforms your terminal into a YouTube music player without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. 
+Spotifree is a lightweight bash script that transforms your terminal into a YouTube music player without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also accepted as inputs. 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text]()
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/4acb60f0af78cc83d5f2544608c19da82a9702e4/Screenshot%20from%202025-07-11%2019-14-39.png)
+
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/4acb60f0af78cc83d5f2544608c19da82a9702e4/Screenshot%20from%202025-07-11%2019-18-22.png)
+
 
 
 ## Features
