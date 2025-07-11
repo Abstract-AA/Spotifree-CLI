@@ -15,9 +15,9 @@ Spotifree is a lightweight bash script that transforms your terminal into a YouT
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-34-15.png)
+![Alt Text]()
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/7e0ed110bd336636fcee4a5c40ef7b6c8367123a/Screenshot%20from%202025-07-10%2019-42-16.png)
+![Alt Text]()
 
 
 ## Features
