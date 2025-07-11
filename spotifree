@@ -278,19 +278,19 @@ main_loop() {
           sleep 1
           continue
         fi
-        echo -n "Repeat options: [1] Normal  [2] Loop  [3] Cancel: "
+        echo -n "                  Repeat options: [1] Once  [2] Loop  [3] Cancel: "
         read -r mode
         case "$mode" in
           1)
-            echo "Repeating: $LAST_QUERY"
+            echo "                  Repeating: $LAST_QUERY"
             play_stream "$LAST_STREAM_URL" false
             ;;
           2)
-            echo "Looping: $LAST_QUERY"
+            echo "                  Looping: $LAST_QUERY"
             play_stream "$LAST_STREAM_URL" true
             ;;
           *)
-            echo "Cancelled."
+            echo "                  Cancelled."
             ;;
         esac
         ;;
