@@ -67,7 +67,7 @@ play_stream() {
   clear_content
   print_mpv_controls
   if [ "$loop" = true ]; then
-    echo "🔁 Loop mode activated"
+    echo "Loop mode activated"
   fi
   
   if [ "$loop" = true ]; then
@@ -108,11 +108,11 @@ show_history() {
     return 1
   fi
   
-  echo "=========[ Recently Played (Last $CACHE_LIMIT) ]========="
+  echo "                         =========[ Recently Played (Last $CACHE_LIMIT) ]========="
   for i in "${!HISTORY[@]}"; do 
-    echo "  $((i+1)). ${HISTORY[$i]}"
+    echo "                                       $((i+1)). ${HISTORY[$i]}"
   done
-  echo "==============================================="
+  echo "                         ===============================================     "
   
   echo -ne "Enter number to replay (or any key to cancel): "
   read -r choice
