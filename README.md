@@ -1,6 +1,6 @@
 <h1 align="center">Spotifree CLI Music Streamer</h1>
 <p align="center">
-  <strong>A minimalist YouTube music player for terminal enthusiasts</strong>
+  <strong>A lightweight minimalist CLI music streaming platform</strong>
 </p>
 
 <div align="center">
