@@ -95,7 +95,7 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-- Add a visual progress bar as the song plays
+- Add a progress bar that updates as the song plays
 
 - Add audio bars
 
