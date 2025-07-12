@@ -95,7 +95,13 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered. In addition, a song suggestion function and multiple possible results beeing displayed after a fuzzy search is also in the works. 
+- Add a visual progress bar as the song plays
+
+- Add audio bars
+
+- Add the option of playing local audio files, together with a file manager like menu to select the songs
+
+- Song search results display, that lets the user browse multiple possible tracks and select only the exact one they are looking for. 
 
 ## Legal Disclaimer & Ethical Use
 
