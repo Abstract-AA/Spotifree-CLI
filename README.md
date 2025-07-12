@@ -1,4 +1,4 @@
-<h1 align="center">Spotifree CLI Music Streamer</h1>
+<h1 align="center">Spotifree CLI</h1>
 <p align="center">
   <strong>A lightweight minimalist CLI music streaming platform</strong>
 </p>
