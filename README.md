@@ -1,6 +1,6 @@
-<h1 align="center">Spotifree CLI Music Streamer</h1>
+<h1 align="center">Spotifree CLI</h1>
 <p align="center">
-  <strong>A minimalist YouTube music player for terminal enthusiasts</strong>
+  <strong>A lightweight minimalist CLI music streaming platform</strong>
 </p>
 
 <div align="center">
@@ -11,7 +11,7 @@
 
 ## Overview
 
-Spotifree is a lightweight bash script that transforms your terminal into a YouTube music player without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also accepted as inputs. 
+Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also accepted as inputs. 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
@@ -25,8 +25,8 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 ## Features
 
 - **Instant Search** - Play any song with a single command
-- **Download Audio files** - Any played song can be downloaded
-- **Playlists** - Create playlists by write multiple song names separated by commas
+- **Download Audio files** - Any song can be downloaded
+- **Playlists** - Create playlists by writing multiple song names separated by commas
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Full MPV controls (pause/seek/volume/loop)
 - **Lightweight** - No GUI overhead or resource-heavy apps
@@ -95,7 +95,13 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-I intend to add a more polished interface for download management, and a visual progress bar as the song plays is being considered. In addition, a song suggestion function and multiple possible results beeing displayed after a fuzzy search is also in the works. 
+- Add a progress bar that updates as the song plays
+
+- Add audio bars
+
+- Add the option of playing local audio files, together with a file manager like menu to select the songs
+
+- Song search results display, that lets the user browse multiple possible tracks and select only the exact one they are looking for. 
 
 ## Legal Disclaimer & Ethical Use
 
