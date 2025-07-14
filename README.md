@@ -55,7 +55,7 @@ chmod +x spotifree
 
 ```
 
-Note: Some distributions have older versions of yt-dlp, and this can cause issues when running the app. Therefore, in this case its ideal to download yt-dlp in a python enviroment:
+Note: Some distributions have older versions of yt-dlp, and this can cause issues when running the app. Therefore, in this case its ideal to download the latest version of yt-dlp in a python enviroment, and then run the script:
 
 ```bash
 # ====== INSTALL LATEST yt-dlp ON ARCH / FEDORA / DEBIAN/UBUNTU ======
