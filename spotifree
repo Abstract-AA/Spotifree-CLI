@@ -58,6 +58,68 @@ play_stream() {
   sleep 1
 }
 
+browse_local_files() {
+  local start_dir="$1"
+  local current_dir
+
+  if [[ -z "$start_dir" || ! -d "$start_dir" ]]; then
+    start_dir="$HOME/Music"
+  fi
+  current_dir="$start_dir"
+
+  while true; do
+    clear
+    print_header
+    echo "  =================[ Browsing: $current_dir ]================="
+
+    local items=()
+    local index=1
+
+    echo "  b. .. (go back)"
+
+    while IFS= read -r entry; do
+      basename=$(basename "$entry")
+      items+=("$entry")
+      if [[ -d "$entry" ]]; then
+        printf "  %d. \e[1m%s\e[0m\n" $index "$basename"
+      else
+        printf "  %d. %s\n" $index "$basename"
+      fi
+      index=$((index + 1))
+    done < <(find "$current_dir" -maxdepth 1 -mindepth 1 | sort)
+
+    echo
+    echo "  =================================================================="
+    echo "  Enter number to open/play file, or 'b' to go up, or 'q' to quit"
+    echo -n "  >>> "
+    read -r choice
+
+    if [[ "$choice" == "q" ]]; then
+      break
+    elif [[ "$choice" == "b" ]]; then
+      current_dir=$(dirname "$current_dir")
+    elif [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#items[@]})); then
+      selected="${items[$((choice - 1))]}"
+      if [[ -d "$selected" ]]; then
+        current_dir="$selected"
+      elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
+        echo "  Now playing: $(basename "$selected")"
+        sleep 1
+        print_mpv_controls
+        mpv --no-video "$selected"
+        sleep 1
+      else
+        echo "  Unsupported file type."
+        sleep 1
+      fi
+    else
+      echo "  Invalid input."
+      sleep 1
+    fi
+  done
+}
+
+
 search_with_list() {
   local query="$1"
   local loop="$2"
@@ -132,7 +194,7 @@ show_history() {
     return
   fi
   echo
-  echo "                  ==============[ Recently Played (Last $CACHE_LIMIT) ]=============="
+  echo "                  ==============[ Recently Streamed (Last $CACHE_LIMIT) ]=============="
   for i in "${!HISTORY[@]}"; do 
     echo "                         $((i+1)). ${HISTORY[$i]}"
   done
@@ -170,7 +232,7 @@ show_history() {
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
     echo "                  No song to download! Please play a song first."
-    sleep 0.5
+    sleep 1
     return 1
   fi
 
@@ -336,9 +398,10 @@ main_loop() {
     echo
     echo "                  ======================[ Commands ]======================="
     echo "                    q - Quit the application"
-    echo "                    r - Repeat the last played song"
-    echo "                    h - View playback history"
-    echo "                    d - Download the last played song"
+    echo "                    r - Repeat the last streamed song"
+    echo "                    h - View streaming history"
+    echo "                    d - Download the last streamed song"
+    echo "                    l - Browse/Play local audio files"
     echo "                    s - Open settings menu"
     echo "                  ========================================================="
     echo -n "                  >>>Enter your choice: "
@@ -380,6 +443,9 @@ main_loop() {
         ;;
       s)
         settings_menu
+        ;;
+      l)
+        browse_local_files "$HOME/Music"
         ;;
       *)
         if [[ -z "$input" ]]; then
