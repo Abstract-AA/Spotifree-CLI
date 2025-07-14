@@ -89,6 +89,7 @@ browse_local_files() {
     done < <(find "$current_dir" -maxdepth 1 -mindepth 1 | sort)
 
     echo
+    echo "  =================================================================="
     echo "  Enter number to open/play file, or 'b' to go up, or 'q' to quit"
     echo -n "  >>> "
     read -r choice
@@ -231,7 +232,7 @@ show_history() {
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
     echo "                  No song to download! Please play a song first."
-    sleep 0.5
+    sleep 1
     return 1
   fi
 
@@ -397,7 +398,7 @@ main_loop() {
     echo
     echo "                  ======================[ Commands ]======================="
     echo "                    q - Quit the application"
-    echo "                    r - Repeat the last played song"
+    echo "                    r - Repeat the last streamed song"
     echo "                    h - View streaming history"
     echo "                    d - Download the last streamed song"
     echo "                    l - Browse/Play local audio files"
