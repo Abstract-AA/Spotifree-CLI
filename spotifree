@@ -49,7 +49,7 @@ play_stream() {
   local loop="$2"
   print_mpv_controls
   if [ "$loop" = true ]; then
-    echo " Loop mode activated"
+    echo "                  Loop mode activated"
     mpv --no-video --loop "$stream_url"
   else
     mpv --no-video "$stream_url"
@@ -138,14 +138,14 @@ download_last() {
     return 1
   }
 
-  echo -n "Converting to MP3..."
+  echo -n "                  Converting to MP3..."
   ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file" && {
     echo " Done!"
     rm "$temp_file"
-    echo "Successfully downloaded: $final_file"
+    echo "                  Successfully downloaded: $final_file"
     return 0
   } || {
-    echo "Conversion failed!"
+    echo "                  Conversion failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     [ -f "$final_file" ] && rm "$final_file"
     return 1
@@ -239,8 +239,9 @@ process_song() {
   stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
 
   if [ -z "$stream_url" ]; then
-    echo "No results found for: $query"
-    return 1
+    echo "                  No results found for: $query"
+    sleep 1
+    return 0
   fi
 
   LAST_STREAM_URL="$stream_url"
