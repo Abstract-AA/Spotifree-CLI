@@ -99,9 +99,7 @@ deactivate # Deactivate environment when done
 
 - Add audio bars
 
-- Add the option of playing local audio files, together with a file manager like menu to select the songs
-
-- Song search results display, that lets the user browse multiple possible tracks and select only the exact one they are looking for. 
+- Add general interface improvements for the local audio file browser 
 
 ## Legal Disclaimer & Ethical Use
 
