@@ -70,7 +70,7 @@ browse_local_files() {
   while true; do
     clear
     print_header
-    echo "  =============[ Browsing: $current_dir ]============="
+    echo "  =================[ Browsing: $current_dir ]================="
 
     local items=()
     local index=1
@@ -193,7 +193,7 @@ show_history() {
     return
   fi
   echo
-  echo "                  ==============[ Recently Played (Last $CACHE_LIMIT) ]=============="
+  echo "                  ==============[ Recently Streamed (Last $CACHE_LIMIT) ]=============="
   for i in "${!HISTORY[@]}"; do 
     echo "                         $((i+1)). ${HISTORY[$i]}"
   done
