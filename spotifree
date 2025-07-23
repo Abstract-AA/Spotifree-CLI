@@ -77,22 +77,37 @@ browse_local_files() {
 
     echo "  b. .. (go back)"
 
+    # List folders first, then files
     while IFS= read -r entry; do
-      basename=$(basename "$entry")
       items+=("$entry")
-      if [[ -d "$entry" ]]; then
-        printf "  %d. \e[1m%s\e[0m\n" $index "$basename"
+    done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type d | sort)
+
+    while IFS= read -r entry; do
+      items+=("$entry")
+    done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type f | sort)
+
+    for i in "${!items[@]}"; do
+      entry_name="${items[$i]}"
+      base_name="$(basename "$entry_name")"
+      if [[ -d "$entry_name" ]]; then
+        printf "  %d. \e[1m%s\e[0m\n" $((i+1)) "$base_name"
       else
-        printf "  %d. %s\n" $index "$basename"
+        printf "  %d. %s\n" $((i+1)) "$base_name"
       fi
-      index=$((index + 1))
-    done < <(find "$current_dir" -maxdepth 1 -mindepth 1 | sort)
+    done
 
     echo
     echo "  =================================================================="
-    echo "  Enter number to open/play file, or 'b' to go up, or 'q' to quit"
+    echo "  Enter number [optionally with -r] to loop, or 'b' to go up, or 'q' to quit"
     echo -n "  >>> "
-    read -r choice
+    read -r -a input_parts
+
+    local choice="${input_parts[0]}"
+    local loop=false
+
+    for arg in "${input_parts[@]}"; do
+      [[ "$arg" == "-r" ]] && loop=true
+    done
 
     if [[ "$choice" == "q" ]]; then
       break
@@ -106,7 +121,12 @@ browse_local_files() {
         echo "  Now playing: $(basename "$selected")"
         sleep 1
         print_mpv_controls
-        mpv --no-video "$selected"
+        if [ "$loop" = true ]; then
+          echo "  Loop mode activated"
+          mpv --no-video --loop "$selected"
+        else
+          mpv --no-video "$selected"
+        fi
         sleep 1
       else
         echo "  Unsupported file type."
