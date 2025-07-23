@@ -100,7 +100,7 @@ deactivate # Deactivate environment when done
 
 - Add audio bars
 
-- Add general interface improvements for the local audio file browser 
+- Add general interface improvements
 
 ## Legal Disclaimer & Ethical Use
 
