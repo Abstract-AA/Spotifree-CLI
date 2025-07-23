@@ -87,11 +87,12 @@ browse_local_files() {
     done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type f | sort)
 
     for i in "${!items[@]}"; do
-      basename=$(basename "${items[$i]}")
-      if [[ -d "${items[$i]}" ]]; then
-        printf "  %d. \e[1m%s\e[0m\n" $((i+1)) "$basename"
+      entry_name="${items[$i]}"
+      base_name="$(basename "$entry_name")"
+      if [[ -d "$entry_name" ]]; then
+        printf "  %d. \e[1m%s\e[0m\n" $((i+1)) "$base_name"
       else
-        printf "  %d. %s\n" $((i+1)) "$basename"
+        printf "  %d. %s\n" $((i+1)) "$base_name"
       fi
     done
 
@@ -117,11 +118,11 @@ browse_local_files() {
       if [[ -d "$selected" ]]; then
         current_dir="$selected"
       elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
-        echo "  Now playing: $(basename \"$selected\")"
+        echo "  Now playing: $(basename "$selected")"
         sleep 1
         print_mpv_controls
         if [ "$loop" = true ]; then
-        echo "   Loop mode activated"
+          echo "  Loop mode activated"
           mpv --no-video --loop "$selected"
         else
           mpv --no-video "$selected"
@@ -137,6 +138,7 @@ browse_local_files() {
     fi
   done
 }
+
 
 search_with_list() {
   local query="$1"
