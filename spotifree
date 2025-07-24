@@ -34,6 +34,7 @@ print_header() {
 }
 
 print_mpv_controls() {
+  echo "                                                                    "	
   echo "                         ===========[ PLAYBACK CONTROLS ]==========="
   echo "                                Space      : Play/Pause"
   echo "                                ←/→        : Seek -/+ 5 seconds"
