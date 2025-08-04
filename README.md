@@ -11,15 +11,13 @@
 
 ## Overview
 
-Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also accepted as inputs. 
+Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/3fcbd228c873948c1aeb758af13d063b30e3a412/Screenshot%20From%202025-08-04%2023-49-01.png)
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/b0c6636d3e041a518101accd23f9a723707766be/Screenshot%20from%202025-07-14%2015-45-48.png)
-
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/4acb60f0af78cc83d5f2544608c19da82a9702e4/Screenshot%20from%202025-07-11%2019-18-22.png)
-
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/579fbb5e10bf154c6491f1c8f0b3e8ad8954d49d/Screenshot%20From%202025-08-04%2023-45-38.png)
 
 
 ## Features
@@ -100,7 +98,7 @@ deactivate # Deactivate environment when done
 
 - Add audio bars
 
-- Add general interface improvements for the local audio file browser 
+- Add general interface improvements
 
 ## Legal Disclaimer & Ethical Use
 
