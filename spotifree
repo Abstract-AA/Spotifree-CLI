@@ -184,11 +184,27 @@ browse_local_files() {
 search_with_list() {
   local query="$1"
   local loop="$2"
-  echo "                  Searching for: $query"
-  
+  echo -n "                  Searching for: $query "
+
+  # Start spinner animation in background
+  (while :; do for var in / - \\ \|; do echo -en "\r                  Searching for: $query $var"; sleep .1; done; done) &
+  LOAD_PID=$!
+  disown $LOAD_PID
+
+  # Perform the actual search
   local search_results
-  search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s") || return 1
-  
+  search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s") || {
+    kill "$LOAD_PID" &>/dev/null
+    echo -e "\r                  Failed to search for: $query"
+    return 1
+  }
+
+  # Kill the spinner
+  kill "$LOAD_PID" &>/dev/null
+  wait "$LOAD_PID" 2>/dev/null
+
+  echo -e "\r                  Search complete for: $query       "
+
   if [ -z "$search_results" ]; then
     echo "                  No results found for: $query"
     sleep 1
@@ -196,7 +212,7 @@ search_with_list() {
   fi
   
   echo
-  echo "                  ===================[ Search Results ]==================="
+  echo "                  ====================[ Search Results ]===================="
   local i=1
   while IFS= read -r line; do
     # Split the line into parts
@@ -204,7 +220,7 @@ search_with_list() {
     printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
-  echo "                  ======================================================="
+  echo "                  ========================================================="
   
   # Get user selection
   echo -n "                  Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
@@ -438,13 +454,13 @@ process_song() {
   local query="$1"
   local loop=false
   local list_mode=false
-  
+
   # Check for flags
   if [[ "$query" == *" -r" ]]; then
     loop=true
     query="${query%% -r}" # Remove the -r flag
   fi
-  
+
   if [[ "$query" == *" -l" ]]; then
     list_mode=true
     query="${query%% -l}" # Remove the -l flag
@@ -453,9 +469,26 @@ process_song() {
   if [ "$list_mode" = true ]; then
     search_with_list "$query" "$loop"
   else
-    echo "                  Searching and streaming: $query"
+    echo -n "                  Searching and streaming: $query "
+
+    # This will start the spinner animation
+    (while :; do for var in / - \\ \|; do echo -en "\r                  Searching and streaming: $query $var"; sleep .1; done; done) &
+    LOAD_PID=$!
+    disown $LOAD_PID
+
+    # Perform the actual query
+    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || {
+      kill "$LOAD_PID" &>/dev/null
+      echo -e "\r                  Failed to find stream for: $query"
+      return 1
+    }
+
+    # This will kill the spinner animation
+    kill "$LOAD_PID" &>/dev/null
+    wait "$LOAD_PID" 2>/dev/null
+
+    echo -e "\r                  Streaming: $query                        "
     echo
-    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
 
     if [ -z "$stream_url" ]; then
       echo "                  No results found for: $query"
@@ -466,9 +499,10 @@ process_song() {
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$query"
     add_to_history "$query" "$stream_url"
-    
+
     play_stream "$stream_url" "$loop"
   fi
+
   return 0
 }
 
