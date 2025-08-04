@@ -15,6 +15,7 @@ mkdir -p "$TMP_DIR" "$TARGET_DIR"
 LAST_STREAM_URL=""
 LAST_QUERY=""
 declare -A SONG_CACHE
+LOCAL_PLAYLIST=()
 HISTORY=()
 CACHE_LIMIT=20
 LOOP_MODE=false
@@ -71,12 +72,12 @@ browse_local_files() {
   while true; do
     clear
     print_header
-    echo "  =================[ Browsing: $current_dir ]================="
+    echo "  ======================[ Browsing: $current_dir ]======================"
 
     local items=()
     local index=1
 
-    echo "  b. .. (go back)"
+    echo "  b. .. (to go back to previous directory)"
 
     # List folders first, then files
     while IFS= read -r entry; do
@@ -96,50 +97,99 @@ browse_local_files() {
         printf "  %d. %s\n" $((i+1)) "$base_name"
       fi
     done
-
-    echo
-    echo "  =================================================================="
-    echo "  Enter number [optionally with -r] to loop, or 'b' to go up, or 'q' to quit"
+    echo "  ============================================================================"
+    echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+    echo "  Press 'p' plays the playlist, 'c' clears it, 'v' shows it, and 'q' to quit"   
+    echo "  Enter number [optionally with -r] to loop, or with '-p' to add to playlist"
     echo -n "  >>> "
     read -r -a input_parts
 
-    local choice="${input_parts[0]}"
     local loop=false
+    local mark_only=false
+    local numbers=()
 
     for arg in "${input_parts[@]}"; do
-      [[ "$arg" == "-r" ]] && loop=true
+      case "$arg" in
+        -r) loop=true ;;
+        -p) mark_only=true ;;
+        p)  
+          if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
+    	    echo "  The playlist is empty."
+            sleep 1
+            continue 2
+          else
+            echo "  Playing playlist..."
+            print_mpv_controls
+            mpv --no-video "${LOCAL_PLAYLIST[@]}"
+          fi
+          sleep 1
+          continue 2
+          ;;
+        c)
+          LOCAL_PLAYLIST=()
+          echo "  Playlist cleared."
+          sleep 1
+          continue 2
+          ;;
+        b) current_dir=$(dirname "$current_dir"); continue 2 ;;
+        v)
+          echo "  ========== Playlist Contents =========="
+          if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
+            echo "  Playlist is empty."
+          else
+            for i in "${!LOCAL_PLAYLIST[@]}"; do
+              path="${LOCAL_PLAYLIST[$i]}"
+              name=$(basename "$path")
+              printf "  %2d. %s\n" $((i+1)) "$name"
+            done
+          fi
+          echo "  ======================================="
+          read -rp "  Press enter to continue..." _
+          continue 2
+          ;;
+        b) current_dir=$(dirname "$current_dir"); continue 2 ;;
+        q) break 2 ;;
+        *,*) IFS=',' read -ra numbers <<< "$arg" ;;
+        [0-9]*) numbers+=("$arg") ;;
+        q) break 2 ;;
+        *,*) IFS=',' read -ra numbers <<< "$arg" ;;
+        [0-9]*) numbers+=("$arg") ;;
+      esac
     done
 
-    if [[ "$choice" == "q" ]]; then
-      break
-    elif [[ "$choice" == "b" ]]; then
-      current_dir=$(dirname "$current_dir")
-    elif [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#items[@]})); then
-      selected="${items[$((choice - 1))]}"
-      if [[ -d "$selected" ]]; then
-        current_dir="$selected"
-      elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
-        echo "  Now playing: $(basename "$selected")"
-        sleep 1
-        print_mpv_controls
-        if [ "$loop" = true ]; then
-          echo "  Loop mode activated"
-          mpv --no-video --loop "$selected"
+    for num in "${numbers[@]}"; do
+      if [[ "$num" =~ ^[0-9]+$ ]] && ((num >= 1 && num <= ${#items[@]})); then
+        selected="${items[$((num - 1))]}"
+        if [[ -d "$selected" ]]; then
+          current_dir="$selected"
+          break
+        elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
+          if [[ "$mark_only" == true ]]; then
+            LOCAL_PLAYLIST+=("$selected")
+            echo "  Added to playlist: $(basename "$selected")"
+            sleep 0.5
+          else
+            echo "  Now playing: $(basename "$selected")"
+            print_mpv_controls
+            if [ "$loop" = true ]; then
+              echo "  Loop mode activated"
+              mpv --no-video --loop "$selected"
+            else
+              mpv --no-video "$selected"
+            fi
+            sleep 1
+          fi
         else
-          mpv --no-video "$selected"
+          echo "  Unsupported file type."
+          sleep 1
         fi
-        sleep 1
       else
-        echo "  Unsupported file type."
+        echo "  Invalid input: $num"
         sleep 1
       fi
-    else
-      echo "  Invalid input."
-      sleep 1
-    fi
+    done
   done
 }
-
 
 search_with_list() {
   local query="$1"
@@ -253,7 +303,7 @@ show_history() {
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
     echo "                  No song to download! Please play a song first."
-    sleep 1
+    sleep 0.5
     return 1
   fi
   echo "                  Destination: $TARGET_DIR"
@@ -297,7 +347,7 @@ download_last() {
     echo "                  Conversion complete!"
     rm "$temp_file"
     echo "                  Successfully downloaded: $final_file"
-    sleep 2
+    sleep 1
     return 0
   else
     echo "                  Conversion failed!"
@@ -435,7 +485,7 @@ main_loop() {
     print_header
     echo "                  ======================[ Main Menu ]======================"
     echo "                     Enter a song name to start listening"
-    echo "                     Enter multiple songs separated by commas for playlist"
+    echo "                     Enter multiple songs separated by commas for a playlist"
     echo "                     Add '-r' at the end to loop a song (e.g., 'song -r')"
     echo "                     Add '-l' at the end to show a list of results"
     echo
