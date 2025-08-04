@@ -19,7 +19,7 @@ LOCAL_PLAYLIST=()
 HISTORY=()
 CACHE_LIMIT=20
 LOOP_MODE=false
-SEARCH_RESULTS_SIZE=5 
+SEARCH_RESULTS_SIZE=8 
 
 print_header() {
   clear
@@ -29,28 +29,16 @@ print_header() {
   echo "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
   echo "                             /_/                                                             "
   echo "---------------------------------------------------------------------------------------------"
-  echo "                                 Your free CLI Music Streamer                                "
+  echo "                                 Your free CLI Music Platform                                "
   echo "---------------------------------------------------------------------------------------------"
-  echo
-}
-
-print_mpv_controls() {
-  echo "                                                                    "	
-  echo "                         ===========[ PLAYBACK CONTROLS ]==========="
-  echo "                                Space      : Play/Pause"
-  echo "                                ←/→        : Seek -/+ 5 seconds"
-  echo "                                ↓/↑        : Seek -/+ 1 minute"
-  echo "                                9/0        : Volume down/up"
-  echo "                                m          : Mute toggle"
-  echo "                                q          : Quit player"
-  echo "                         ==========================================="
-  echo
+  echo " [Space] Play/Pause   [←/→] Seek 5s   [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
+  echo "   [r] Repeat   [h] Streaming History   [d] Download last song   [l] Browse Local Files"
+  echo "---------------------------------------------------------------------------------------------"
 }
 
 play_stream() {
   local stream_url="$1"
   local loop="$2"
-  print_mpv_controls
   if [ "$loop" = true ]; then
     echo "                  Loop mode activated"
     mpv --no-video --loop "$stream_url"
@@ -72,12 +60,13 @@ browse_local_files() {
   while true; do
     clear
     print_header
+    echo
     echo "  ======================[ Browsing: $current_dir ]======================"
 
     local items=()
     local index=1
 
-    echo "  b. .. (to go back to previous directory)"
+    echo "  b. .. (return to previous directory)"
 
     # List folders first, then files
     while IFS= read -r entry; do
@@ -99,7 +88,7 @@ browse_local_files() {
     done
     echo "  ============================================================================"
     echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
-    echo "  Press 'p' plays the playlist, 'c' clears it, 'v' shows it, and 'q' to quit"   
+    echo "  Press 'p' to play the playlist, 'c' to clear it, & 'v' to show it "   
     echo "  Enter number [optionally with -r] to loop, or with '-p' to add to playlist"
     echo -n "  >>> "
     read -r -a input_parts
@@ -119,7 +108,7 @@ browse_local_files() {
             continue 2
           else
             echo "  Playing playlist..."
-            print_mpv_controls
+            echo
             mpv --no-video "${LOCAL_PLAYLIST[@]}"
           fi
           sleep 1
@@ -133,7 +122,8 @@ browse_local_files() {
           ;;
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
         v)
-          echo "  ========== Playlist Contents =========="
+          echo
+          echo "  ===========================[ Playlist Contents ]==========================="
           if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
             echo "  Playlist is empty."
           else
@@ -143,7 +133,8 @@ browse_local_files() {
               printf "  %2d. %s\n" $((i+1)) "$name"
             done
           fi
-          echo "  ======================================="
+          echo "  ==========================================================================="
+          echo
           read -rp "  Press enter to continue..." _
           continue 2
           ;;
@@ -170,7 +161,6 @@ browse_local_files() {
             sleep 0.5
           else
             echo "  Now playing: $(basename "$selected")"
-            print_mpv_controls
             if [ "$loop" = true ]; then
               echo "  Loop mode activated"
               mpv --no-video --loop "$selected"
@@ -206,7 +196,7 @@ search_with_list() {
   fi
   
   echo
-  echo "                  ==============[ Search Results ]=============="
+  echo "                  ===================[ Search Results ]==================="
   local i=1
   while IFS= read -r line; do
     # Split the line into parts
@@ -214,7 +204,7 @@ search_with_list() {
     printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
-  echo "                  ============================================="
+  echo "                  ======================================================="
   
   # Get user selection
   echo -n "                  Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
@@ -227,6 +217,7 @@ search_with_list() {
     local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)
     
     echo "                  Selected: $video_title"
+    echo
     stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1
     
     LAST_STREAM_URL="$stream_url"
@@ -427,11 +418,11 @@ settings_menu() {
   	echo "                         Current search results size: $SEARCH_RESULTS_SIZE"
   	echo "                         Enter new search results size (1-20):"
   	read -r new_size
-  	if [[ "$new_size" =~ ^[0-9]+$ ]] && ((new_size >= 1 && new_size <= 20)); then
+  	if [[ "$new_size" =~ ^[0-9]+$ ]] && ((new_size >= 1 && new_size <= 25)); then
     	  SEARCH_RESULTS_SIZE=$new_size
     	  echo "                  Search results size set to: $SEARCH_RESULTS_SIZE"
   	else
-    	  echo "                  Invalid size. Must be between 1 and 20."
+    	  echo "                  Invalid size. Must be between 1 and 25."
   	fi
   	;;
       *)
@@ -463,6 +454,7 @@ process_song() {
     search_with_list "$query" "$loop"
   else
     echo "                  Searching and streaming: $query"
+    echo
     stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || return 1
 
     if [ -z "$stream_url" ]; then
@@ -483,20 +475,14 @@ process_song() {
 main_loop() {
   while true; do
     print_header
-    echo "                  ======================[ Main Menu ]======================"
+    echo
+    echo "                  =======================[ Main Menu ]======================="
     echo "                     Enter a song name to start listening"
     echo "                     Enter multiple songs separated by commas for a playlist"
     echo "                     Add '-r' at the end to loop a song (e.g., 'song -r')"
     echo "                     Add '-l' at the end to show a list of results"
+    echo "                  ==========================================================="
     echo
-    echo "                  ======================[ Commands ]======================="
-    echo "                    q - Quit the application"
-    echo "                    r - Repeat the last streamed song"
-    echo "                    h - View streaming history"
-    echo "                    d - Download the last streamed song"
-    echo "                    l - Browse/Play local audio files"
-    echo "                    s - Open settings menu"
-    echo "                  ========================================================="
     echo -n "                  >>>Enter your choice: "
     read -r input
     
