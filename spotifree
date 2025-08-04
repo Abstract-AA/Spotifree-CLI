@@ -256,8 +256,6 @@ download_last() {
     sleep 1
     return 1
   fi
-
-  echo "                  Downloading: $LAST_QUERY , please wait..."
   echo "                  Destination: $TARGET_DIR"
   echo "                  Audio Quality: ${AUDIO_QUALITY}kbps"
   
@@ -265,24 +263,48 @@ download_last() {
   temp_file="${TMP_DIR}/${clean_title}.webm"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  yt-dlp --quiet --no-warnings -f "bestaudio[ext=webm]" --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL" || {
+  # this part will manage the animation
+  echo -n "                  Downloading: $LAST_QUERY , please wait... "
+  (while :; do for var in / - \\ \|; do echo -en "\r                  Downloading $var"; sleep .1; done; done) &
+  LOAD_PID=$!
+  disown $LOAD_PID
+
+  yt-dlp --quiet --no-warnings -f "bestaudio[ext=webm]" --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
+  download_status=$?
+  
+  kill $LOAD_PID 2>/dev/null
+  echo -en "\r                                                  \r" # Clear loading line
+
+  if [ $download_status -ne 0 ]; then
     echo "                  Download failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     return 1
-  }
+  fi
 
-  echo -n "                  Converting to MP3..."
-  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file" && {
-    echo " Done!"
+  # Start conversion with loading animation
+  echo -n "                  Converting to MP3 "
+  (while :; do for var in / - \\ \|; do echo -en "\r                  Converting to MP3 $var"; sleep .1; done; done) &
+  LOAD_PID=$!
+  disown $LOAD_PID
+
+  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
+  convert_status=$?
+  
+  kill $LOAD_PID 2>/dev/null
+  echo -en "\r                                                  \r" # Clear loading line
+
+  if [ $convert_status -eq 0 ]; then
+    echo "                  Conversion complete!"
     rm "$temp_file"
     echo "                  Successfully downloaded: $final_file"
+    sleep 2
     return 0
-  } || {
+  else
     echo "                  Conversion failed!"
     [ -f "$temp_file" ] && rm "$temp_file"
     [ -f "$final_file" ] && rm "$final_file"
     return 1
-  }
+  fi
 }
 
 settings_menu() {
