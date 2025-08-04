@@ -32,7 +32,7 @@ print_header() {
   echo "                                 Your free CLI Music Platform                                "
   echo "---------------------------------------------------------------------------------------------"
   echo " [Space] Play/Pause   [←/→] Seek 5s   [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
-  echo "   [r] Repeat   [h] Streaming History   [d] Download last song   [l] Browse Local Files"
+  echo "[r] Repeat   [h] Streaming History  [d] Download last streamed song   [l] Browse Local Files"
   echo "---------------------------------------------------------------------------------------------"
 }
 
