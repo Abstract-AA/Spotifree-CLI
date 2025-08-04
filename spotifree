@@ -31,16 +31,28 @@ print_header() {
   echo "---------------------------------------------------------------------------------------------"
   echo "                                 Your free CLI Music Platform                                "
   echo "---------------------------------------------------------------------------------------------"
-  echo " [Space] Play/Pause   [←/→] Seek 5s   [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
-  echo "[r] Repeat   [h] Streaming History  [d] Download last streamed song   [l] Browse Local Files"
+}
+
+print_main_header() {
+  echo " [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
+  echo " [r] Repeat   [h] Streaming History  [d] Download last streamed song  [l] Browse Local Files"
   echo "---------------------------------------------------------------------------------------------"
 }
+
+print_browser_header() {
+  echo " [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
+  echo "      [p] Play local song playlist      [v] View playlist      [c] Clear playlist"
+  echo " [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)"
+  echo "---------------------------------------------------------------------------------------------"
+}
+
 
 play_stream() {
   local stream_url="$1"
   local loop="$2"
   if [ "$loop" = true ]; then
     echo "                  Loop mode activated"
+    echo
     mpv --no-video --loop "$stream_url"
   else
     mpv --no-video "$stream_url"
@@ -60,6 +72,7 @@ browse_local_files() {
   while true; do
     clear
     print_header
+    print_browser_header
     echo
     echo "  ======================[ Browsing: $current_dir ]======================"
 
@@ -88,9 +101,7 @@ browse_local_files() {
     done
     echo "  ============================================================================"
     echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
-    echo "  Press 'p' to play the playlist, 'c' to clear it, & 'v' to show it "   
-    echo "  Enter number [optionally with -r] to loop, or with '-p' to add to playlist"
-    echo -n "  >>> "
+    echo -n "  Enter number >>> "
     read -r -a input_parts
 
     local loop=false
@@ -163,6 +174,7 @@ browse_local_files() {
             echo "  Now playing: $(basename "$selected")"
             if [ "$loop" = true ]; then
               echo "  Loop mode activated"
+              echo
               mpv --no-video --loop "$selected"
             else
               mpv --no-video "$selected"
@@ -509,6 +521,7 @@ process_song() {
 main_loop() {
   while true; do
     print_header
+    print_main_header
     echo
     echo "                  =======================[ Main Menu ]======================="
     echo "                     Enter a song name to start listening"
@@ -535,10 +548,12 @@ main_loop() {
         case "$mode" in
           1)
             echo "                  Repeating: $LAST_QUERY"
+            echo
             play_stream "$LAST_STREAM_URL" false
             ;;
           2)
             echo "                  Looping: $LAST_QUERY"
+            echo
             play_stream "$LAST_STREAM_URL" true
             ;;
           *)
