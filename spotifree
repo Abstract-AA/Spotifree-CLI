@@ -55,6 +55,7 @@ play_stream() {
     echo
     mpv --no-video --loop "$stream_url"
   else
+  echo
     mpv --no-video "$stream_url"
   fi
   sleep 1
@@ -177,6 +178,7 @@ browse_local_files() {
               echo
               mpv --no-video --loop "$selected"
             else
+            echo
               mpv --no-video "$selected"
             fi
             sleep 1
@@ -317,7 +319,6 @@ show_history() {
     echo "Cancelled."
   fi
 }
-
 
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
@@ -500,7 +501,6 @@ process_song() {
     wait "$LOAD_PID" 2>/dev/null
 
     echo -e "\r                  Streaming: $query                        "
-    echo
 
     if [ -z "$stream_url" ]; then
       echo "                  No results found for: $query"
@@ -548,12 +548,10 @@ main_loop() {
         case "$mode" in
           1)
             echo "                  Repeating: $LAST_QUERY"
-            echo
             play_stream "$LAST_STREAM_URL" false
             ;;
           2)
             echo "                  Looping: $LAST_QUERY"
-            echo
             play_stream "$LAST_STREAM_URL" true
             ;;
           *)
