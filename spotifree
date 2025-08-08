@@ -568,7 +568,7 @@ main_loop() {
         ;;
       *)
         if [[ -z "$input" ]]; then
-         echo "No input entered. Returning to menu..."
+         echo "                  No input entered. Returning to menu..."
          sleep 1
          continue
         fi
