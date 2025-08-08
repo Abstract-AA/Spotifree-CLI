@@ -40,8 +40,8 @@ print_main_header() {
 }
 
 print_browser_header() {
-  echo " [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
-  echo "      [p] Play local song playlist      [v] View playlist      [c] Clear playlist"
+  echo " [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+      [q] Quit"
+  echo "       [p] Play current playlist       [v] View playlist       [c] Clear playlist"
   echo " [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)"
   echo "---------------------------------------------------------------------------------------------"
 }
@@ -326,53 +326,46 @@ download_last() {
     sleep 0.5
     return 1
   fi
+  
   echo "                  Destination: $TARGET_DIR"
   echo "                  Audio Quality: ${AUDIO_QUALITY}kbps"
-  
+
   clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
-  temp_file="${TMP_DIR}/${clean_title}.webm"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  # this part will manage the animation
-  echo -n "                  Downloading: $LAST_QUERY , please wait... "
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Downloading $var"; sleep .1; done; done) &
-  LOAD_PID=$!
-  disown $LOAD_PID
+  spinner() {
+    local spin='|/-\'
+    local i=0
+    while :; do
+      printf "\r                  %s Downloading %s, please wait... " "${spin:i++%${#spin}:1}" "$LAST_QUERY"
+      sleep 0.1
+    done
+  }
 
-  yt-dlp --quiet --no-warnings -f "bestaudio[ext=webm]" --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
+  spinner &
+  SPINNER_PID=$!
+
+  yt-dlp --quiet --no-warnings --no-progress \
+    -f bestaudio \
+    --extract-audio --audio-format mp3 \
+    --audio-quality "${AUDIO_QUALITY}k" \
+    -o "$final_file" \
+    "$LAST_STREAM_URL"
   download_status=$?
-  
-  kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r" # Clear loading line
 
-  if [ $download_status -ne 0 ]; then
-    echo "                  Download failed!"
-    [ -f "$temp_file" ] && rm "$temp_file"
-    return 1
-  fi
+  kill $SPINNER_PID 2>/dev/null
+  echo -en "\r                                                  \r"
 
-  # Start conversion with loading animation
-  echo -n "                  Converting to MP3 "
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Converting to MP3 $var"; sleep .1; done; done) &
-  LOAD_PID=$!
-  disown $LOAD_PID
-
-  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
-  convert_status=$?
-  
-  kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r" # Clear loading line
-
-  if [ $convert_status -eq 0 ]; then
-    echo "                  Conversion complete!"
-    rm "$temp_file"
+  if [[ $download_status -eq 0 ]]; then
     echo "                  Successfully downloaded: $final_file"
-    sleep 1
+    echo -n "                  Press Enter to continue..."
+    read -r  
     return 0
   else
-    echo "                  Conversion failed!"
-    [ -f "$temp_file" ] && rm "$temp_file"
-    [ -f "$final_file" ] && rm "$final_file"
+    echo "                  Download failed!"
+    [ -f "$final_file" ] && rm -f "$final_file"
+    echo -n "                  Press Enter to continue..."
+    read -r  
     return 1
   fi
 }
@@ -482,17 +475,17 @@ process_song() {
   if [ "$list_mode" = true ]; then
     search_with_list "$query" "$loop"
   else
-    echo -n "                  Searching and streaming: $query "
+    echo -n "              Searching and streaming: $query "
 
     # This will start the spinner animation
-    (while :; do for var in / - \\ \|; do echo -en "\r                  Searching and streaming: $query $var"; sleep .1; done; done) &
+    (while :; do for var in / - \\ \|; do echo -en "\r              Searching and streaming: $query $var"; sleep .1; done; done) &
     LOAD_PID=$!
     disown $LOAD_PID
 
     # Perform the actual query
     stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || {
       kill "$LOAD_PID" &>/dev/null
-      echo -e "\r                  Failed to find stream for: $query"
+      echo -e "\r              Failed to find stream for: $query"
       return 1
     }
 
@@ -500,10 +493,10 @@ process_song() {
     kill "$LOAD_PID" &>/dev/null
     wait "$LOAD_PID" 2>/dev/null
 
-    echo -e "\r                  Streaming: $query                        "
+    echo -e "\r              Streaming: $query                        "
 
     if [ -z "$stream_url" ]; then
-      echo "                  No results found for: $query"
+      echo "              No results found for: $query"
       sleep 1
       return 0
     fi
@@ -523,12 +516,12 @@ main_loop() {
     print_header
     print_main_header
     echo
-    echo "                  =======================[ Main Menu ]======================="
-    echo "                     Enter a song name to start listening"
-    echo "                     Enter multiple songs separated by commas for a playlist"
-    echo "                     Add '-r' at the end to loop a song (e.g., 'song -r')"
-    echo "                     Add '-l' at the end to show a list of results"
-    echo "                  ==========================================================="
+    echo "              ===========================[ Main Menu ]==========================="
+    echo "                 Enter a song name to start listening"
+    echo "                 Enter multiple songs separated by an asterisk for a playlist"
+    echo "                 Add '-r' at the end to loop a song (e.g., 'song -r')"
+    echo "                 Add '-l' at the end to show a list of results"
+    echo "              ==================================================================="
     echo
     echo -n "                  >>>Enter your choice: "
     read -r input
@@ -575,13 +568,13 @@ main_loop() {
         ;;
       *)
         if [[ -z "$input" ]]; then
-         echo "                  No input entered. Returning to menu..."
+         echo "No input entered. Returning to menu..."
          sleep 1
          continue
         fi
         # this will handle the comma-separated playlist
-        if [[ "$input" == *,* ]]; then
-          IFS=',' read -ra songs <<< "$input"
+        if [[ "$input" == *** ]]; then
+          IFS='*' read -ra songs <<< "$input"
           for song in "${songs[@]}"; do
             song=$(echo "$song" | xargs) # this trims whitespace has to be here
             [ -z "$song" ] && continue
