@@ -207,7 +207,7 @@ search_with_list() {
 
   # Perform the actual search
   local search_results
-  search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s") || {
+  search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s" 2>/dev/null) || {
     kill "$LOAD_PID" &>/dev/null
     echo -e "\r                  Failed to search for: $query"
     return 1
@@ -495,7 +495,7 @@ process_song() {
     disown $LOAD_PID
 
     # Perform the actual query
-    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query") || {
+    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query" 2>/dev/null) || {
       kill "$LOAD_PID" &>/dev/null
       echo -e "\r                  Failed to find stream for: $query"
       return 1
