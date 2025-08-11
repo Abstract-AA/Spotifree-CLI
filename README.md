@@ -15,16 +15,16 @@ Spotifree is a bash script that transforms your terminal into a music streaming 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/3fcbd228c873948c1aeb758af13d063b30e3a412/Screenshot%20From%202025-08-04%2023-49-01.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/5d6bfe4f9ff9b68103b03eebcc7c769ca87de5a5/Screenshot%20From%202025-08-11%2021-21-14.png)
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/579fbb5e10bf154c6491f1c8f0b3e8ad8954d49d/Screenshot%20From%202025-08-04%2023-45-38.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/ba29a07f5940b7c9c62982677c373fd6d8ab321c/Screenshot%20From%202025-08-11%2021-26-16.png)
 
 
 ## Features
 
 - **Instant Search** - Play any song with a single command
 - **Download Audio files** - Any song can be downloaded
-- **Playlists** - Create playlists by writing multiple song names separated by commas or by using the "-p" flag when file browsing
+- **Playlists** - Create playlists by writing multiple song names separated by asterisks or by using the "-p" flag when file browsing
 - **Local Audio File Support** - A file browser is included, and any local audio files can also be played
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
