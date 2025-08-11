@@ -40,7 +40,7 @@ print_main_header() {
 }
 
 print_browser_header() {
-  echo " [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
+  echo " [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit"
   echo "      [p] Play local song playlist      [v] View playlist      [c] Clear playlist"
   echo " [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)"
   echo "---------------------------------------------------------------------------------------------"
@@ -55,6 +55,7 @@ play_stream() {
     echo
     mpv --no-video --loop "$stream_url"
   else
+  echo
     mpv --no-video "$stream_url"
   fi
   sleep 1
@@ -177,6 +178,7 @@ browse_local_files() {
               echo
               mpv --no-video --loop "$selected"
             else
+            echo
               mpv --no-video "$selected"
             fi
             sleep 1
@@ -318,7 +320,6 @@ show_history() {
   fi
 }
 
-
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
     echo "                  No song to download! Please play a song first."
@@ -327,22 +328,25 @@ download_last() {
   fi
   echo "                  Destination: $TARGET_DIR"
   echo "                  Audio Quality: ${AUDIO_QUALITY}kbps"
-  
+
   clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
-  temp_file="${TMP_DIR}/${clean_title}.webm"
+  temp_file="${TMP_DIR}/${clean_title}.opus"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  # this part will manage the animation
-  echo -n "                  Downloading: $LAST_QUERY , please wait... "
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Downloading $var"; sleep .1; done; done) &
+  # ---------- DOWNLOAD ----------
+  echo -n "                  "
+  (while :; do for var in / - \\ \|; do
+      echo -en "\r                  $var Downloading: $LAST_QUERY, please wait..."
+      sleep .1
+    done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
-  yt-dlp --quiet --no-warnings -f "bestaudio[ext=webm]" --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
+  yt-dlp --quiet --no-warnings --extract-audio --audio-format opus --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
   download_status=$?
-  
+
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r" # Clear loading line
+  echo -en "\r                                                  \r"
 
   if [ $download_status -ne 0 ]; then
     echo "                  Download failed!"
@@ -350,17 +354,19 @@ download_last() {
     return 1
   fi
 
-  # Start conversion with loading animation
-  echo -n "                  Converting to MP3 "
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Converting to MP3 $var"; sleep .1; done; done) &
+  echo -n "                  "
+  (while :; do for var in / - \\ \|; do
+      echo -en "\r                  $var Converting to MP3..."
+      sleep .1
+    done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
   ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
   convert_status=$?
-  
+
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r" # Clear loading line
+  echo -en "\r                                                  \r"
 
   if [ $convert_status -eq 0 ]; then
     echo "                  Conversion complete!"
@@ -500,7 +506,6 @@ process_song() {
     wait "$LOAD_PID" 2>/dev/null
 
     echo -e "\r                  Streaming: $query                        "
-    echo
 
     if [ -z "$stream_url" ]; then
       echo "                  No results found for: $query"
@@ -523,12 +528,12 @@ main_loop() {
     print_header
     print_main_header
     echo
-    echo "                  =======================[ Main Menu ]======================="
-    echo "                     Enter a song name to start listening"
-    echo "                     Enter multiple songs separated by commas for a playlist"
-    echo "                     Add '-r' at the end to loop a song (e.g., 'song -r')"
-    echo "                     Add '-l' at the end to show a list of results"
-    echo "                  ==========================================================="
+    echo "                =========================[ Main Menu ]========================="
+    echo "                   Enter a song name to start listening"
+    echo "                   Enter multiple songs separated by asterisks for a playlist"
+    echo "                   Add '-r' at the end to loop a song (e.g., 'song -r')"
+    echo "                   Add '-l' at the end to show a list of results"
+    echo "                ==============================================================="
     echo
     echo -n "                  >>>Enter your choice: "
     read -r input
@@ -548,12 +553,10 @@ main_loop() {
         case "$mode" in
           1)
             echo "                  Repeating: $LAST_QUERY"
-            echo
             play_stream "$LAST_STREAM_URL" false
             ;;
           2)
             echo "                  Looping: $LAST_QUERY"
-            echo
             play_stream "$LAST_STREAM_URL" true
             ;;
           *)
@@ -582,8 +585,8 @@ main_loop() {
          continue
         fi
         # this will handle the comma-separated playlist
-        if [[ "$input" == *,* ]]; then
-          IFS=',' read -ra songs <<< "$input"
+        if [[ "$input" == *** ]]; then
+          IFS='*' read -ra songs <<< "$input"
           for song in "${songs[@]}"; do
             song=$(echo "$song" | xargs) # this trims whitespace has to be here
             [ -z "$song" ] && continue
