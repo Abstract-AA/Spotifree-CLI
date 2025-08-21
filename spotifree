@@ -21,29 +21,47 @@ CACHE_LIMIT=20
 LOOP_MODE=false
 SEARCH_RESULTS_SIZE=8 
 
+cols=$(tput cols)
+lines=$(tput lines)
+
+# Updates the dimensions whenever the user resizes
+trap 'cols=$(tput cols); lines=$(tput lines)' WINCH
+
+center() {
+    local text="$1"
+    local pad=$(( (cols - ${#text}) / 2 ))
+    [[ $pad -le 0 ]] && pad=0
+    printf "%*s%s\n" "$pad" "" "$text"
+}
+
+hr() {
+    printf '%*s\n' "$cols" '' | tr ' ' '-'
+}
+
+
 print_header() {
   clear
-  echo "                            ____           __   _  ___                                       "
-  echo "  ____ ____ ____ ____      / __/___  ___  / /_ (_)/ _/____ ___  ___       ____ ____ ____ ____"
-  echo " /___//___//___//___/     _\ \ / _ \/ _ \/ __// // _// __// -_)/ -_)     /___//___//___//___/"
-  echo "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
-  echo "                             /_/                                                             "
-  echo "---------------------------------------------------------------------------------------------"
-  echo "                                 Your free CLI Music Platform                                "
-  echo "---------------------------------------------------------------------------------------------"
+  center "                            ____           __   _  ___                                       "
+  center "  ____ ____ ____ ____      / __/___  ___  / /_ (_)/ _/____ ___  ___       ____ ____ ____ ____"
+  center " /___//___//___//___/     _\ \ / _ \/ _ \/ __// // _// __// -_)/ -_)     /___//___//___//___/"
+  center "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
+  center "                             /_/                                                             "
+  echo
+  center "                                 Your free CLI Music Platform                                "
+  hr
 }
 
 print_main_header() {
-  echo " [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit"
-  echo " [r] Repeat   [h] Streaming History  [d] Download last streamed song  [l] Browse Local Files"
-  echo "---------------------------------------------------------------------------------------------"
+    center "| [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit |"
+    center "| [r] Repeat   [h] Streaming History  [d] Download last streamed song  [l] Browse Local Files |"
+    hr
 }
 
 print_browser_header() {
-  echo " [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit"
-  echo "      [p] Play local song playlist      [v] View playlist      [c] Clear playlist"
-  echo " [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)"
-  echo "---------------------------------------------------------------------------------------------"
+    center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
+    center "|      [p] Play local song playlist      [v] View playlist      [c] Clear playlist           |"
+    center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
+    hr
 }
 
 
@@ -53,10 +71,12 @@ play_stream() {
   if [ "$loop" = true ]; then
     echo "                  Loop mode activated"
     echo
-    mpv --no-video --loop "$stream_url"
+    hr
+    mpv --no-video --loop "$stream_url" --msg-level=ffmpeg=no,network=no
   else
   echo
-    mpv --no-video "$stream_url"
+    hr
+    mpv --no-video "$stream_url" --msg-level=ffmpeg=no,network=no
   fi
   sleep 1
 }
@@ -528,14 +548,14 @@ main_loop() {
     print_header
     print_main_header
     echo
-    echo "                =========================[ Main Menu ]========================="
-    echo "                   Enter a song name to start listening"
-    echo "                   Enter multiple songs separated by asterisks for a playlist"
-    echo "                   Add '-r' at the end to loop a song (e.g., 'song -r')"
-    echo "                   Add '-l' at the end to show a list of results"
-    echo "                ==============================================================="
+    center "=========================[ Main Menu ]========================="
+    center "  Enter a song name to start listening"
+    center "  Enter multiple songs separated by asterisks for a playlist"
+    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
+    center "  Add '-l' at the end to show a list of results"
+    center "==============================================================="
     echo
-    echo -n "                  >>>Enter your choice: "
+    printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) ""
     read -r input
     
     case "$input" in
