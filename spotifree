@@ -85,10 +85,12 @@ play_stream() {
   if [ "$loop" = true ]; then
     echo "                  Loop mode activated"
     echo
-    mpv --no-video --loop "$stream_url"
+    hr
+    mpv --no-video --loop "$stream_url" --msg-level=ffmpeg=no,network=no
   else
   echo
-    mpv --no-video "$stream_url"
+    hr
+    mpv --no-video "$stream_url" --msg-level=ffmpeg=no,network=no
   fi
   sleep 1
 }
