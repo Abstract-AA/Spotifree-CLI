@@ -38,20 +38,6 @@ hr() {
     printf '%*s\n' "$cols" '' | tr ' ' '-'
 }
 
-header_box() {
-    local title="$1"
-    clear
-    hr
-    center "$title"
-    hr
-}
-
-# Multi-line block version
-center_block() {
-    while IFS= read -r line; do
-        center "$line"
-    done <<< "$@"
-}
 
 print_header() {
   clear
