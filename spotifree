@@ -38,6 +38,26 @@ hr() {
     printf '%*s\n' "$cols" '' | tr ' ' "$char"
 }
 
+hr_text() {
+    local char="${1:--}"           # Default to '-' if no char is passed
+    shift
+    local text="$*"                # All remaining arguments as the text
+    local cols=$(tput cols)        # Terminal width
+    local prefix=" [ "
+    local suffix=" ] "
+    local content="${prefix}${text}${suffix}"
+    local content_len=${#content}
+    local pad_len=$(( (cols - content_len) / 2 )) # Calculate padding
+    local extra=$(( (cols - content_len) % 2 ))  # To deal with odd widths
+    if (( pad_len < 0 )); then        
+        echo "$content" # If text is too long, just print it
+    else
+        printf '%*s' "$pad_len" '' | tr ' ' "$char"
+        printf "%s" "$content"
+        printf '%*s\n' "$((pad_len + extra))" '' | tr ' ' "$char"
+    fi
+}
+
 print_header() {
   clear
   center "                            ____           __   _  ___                                       "
@@ -94,7 +114,7 @@ browse_local_files() {
     print_header
     print_browser_header
     echo
-    echo "  ======================[ Browsing: $current_dir ]======================"
+    hr_text "=" "Browsing: $current_dir"
 
     local items=()
     local index=1
@@ -250,7 +270,7 @@ search_with_list() {
   while IFS= read -r line; do
     # Split the line into parts
     IFS="|" read -r title id duration <<< "$line"
-    printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)" $(( (cols-62)/2 )) 
+    printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
   center "========================================================="
