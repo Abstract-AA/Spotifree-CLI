@@ -43,9 +43,7 @@ hr_text() {
     shift
     local text="$*"                # All remaining arguments as the text
     local cols=$(tput cols)        # Terminal width
-    local prefix=" [ "
-    local suffix=" ] "
-    local content="${prefix}${text}${suffix}"
+    local content="${text}"
     local content_len=${#content}
     local pad_len=$(( (cols - content_len) / 2 )) # Calculate padding
     local extra=$(( (cols - content_len) % 2 ))  # To deal with odd widths
@@ -114,7 +112,7 @@ browse_local_files() {
     print_header
     print_browser_header
     echo
-    hr_text "=" "Browsing: $current_dir"
+    hr_text "=" "[ Browsing: $current_dir ]"
 
     local items=()
     local index=1
@@ -174,7 +172,7 @@ browse_local_files() {
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
         v)
           echo
-          echo "  ===========================[ Playlist Contents ]==========================="
+          hr_text "-" "[ Playlist Contents ]"
           if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
             echo "  Playlist is empty."
           else
@@ -184,7 +182,7 @@ browse_local_files() {
               printf "  %2d. %s\n" $((i+1)) "$name"
             done
           fi
-          echo "  ==========================================================================="
+          hr
           echo
           read -rp "  Press enter to continue..." _
           continue 2
