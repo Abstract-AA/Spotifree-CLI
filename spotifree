@@ -533,8 +533,8 @@ process_song() {
     kill "$LOAD_PID" &>/dev/null # This will kill the spinner animation
     wait "$LOAD_PID" 2>/dev/null
     if [ -z "$stream_url" ]; then
-      printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
-      sleep 1
+      printf "\n%*sNo results found for: $query" $(( (cols-62)/2 ))
+      read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
       return 0
     fi
     LAST_STREAM_URL="$stream_url"
