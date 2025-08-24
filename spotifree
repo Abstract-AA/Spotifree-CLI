@@ -10,8 +10,6 @@ TARGET_DIR="$HOME/Music"
 TMP_DIR="/tmp/ytmp3"
 AUDIO_QUALITY="64"  # Default quality in kbps
 mkdir -p "$TMP_DIR" "$TARGET_DIR"
-
-# Cache variables
 LAST_STREAM_URL=""
 LAST_QUERY=""
 declare -A SONG_CACHE
@@ -39,8 +37,8 @@ hr() {
 }
 
 hr_text() {
-    local char="$1"               # Fill character
-    local text="$2"               # Text to display
+    local char="$1"  # Fill character
+    local text="$2"  # Text to display
     local position_factor="${3:-2}"  # Default to center (2) if not provided
     local cols=$(tput cols)
     local text_len=${#text} 
@@ -68,7 +66,7 @@ print_header() {
   center "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
   center "                             /_/                                                             "
   echo
-  center "                                 Your free CLI Music Platform                                "
+  center "                                   Your Free Music Platform                                  "
   hr
 }
 
@@ -242,33 +240,25 @@ search_with_list() {
   local query="$1"
   local loop="$2"
   printf "%*sSearching for: $query" $(( (cols-62)/2 ))
-
   # Start spinner animation in background
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Searching for: $query $var"; sleep .1; done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*sSearching for: %s %s" "$padding" "" "$query" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
-
   # Perform the actual search
   local search_results
   search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s" 2>/dev/null) || {
     kill "$LOAD_PID" &>/dev/null
     echo -e "\r                  Failed to search for: $query"
     return 1
-  }
-
-  # Kill the spinner
-  kill "$LOAD_PID" &>/dev/null
+  }  
+  kill "$LOAD_PID" &>/dev/null # Kill the spinner
   wait "$LOAD_PID" 2>/dev/null
   
-  
-  echo -e "\r                  Search complete for: $query       "
-
   if [ -z "$search_results" ]; then
     printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
     sleep 1
     return 0
-  fi
-  
+  fi 
   echo
   hr_text "-" "[ Search Results ]" "10"
   local i=1
