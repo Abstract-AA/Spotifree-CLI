@@ -377,16 +377,11 @@ download_last() {
   fi
   printf "%*sDestination: $TARGET_DIR" $(( (cols-62)/2 )) ""
   printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
-
   clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
   temp_file="${TMP_DIR}/${clean_title}.opus"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  echo -n "                  "
-  (while :; do for var in / - \\ \|; do
-      echo -en "\r                  $var Downloading: $LAST_QUERY, please wait..."
-      sleep .1
-    done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
@@ -394,39 +389,33 @@ download_last() {
   download_status=$?
 
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r"
 
   if [ $download_status -ne 0 ]; then
     printf "%*sDownload failed!" $(( (cols-62)/2 ))
-    sleep 1
     [ -f "$temp_file" ] && rm "$temp_file"
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 1
   fi
 
-  echo -n "                  "
-  (while :; do for var in / - \\ \|; do
-      echo -en "\r                  $var Converting to MP3..."
-      sleep .1
-    done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
   ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
   convert_status=$?
-
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r"
 
   if [ $convert_status -eq 0 ]; then
     printf "%*sConversion complete!" $(( (cols-62)/2 ))
     rm "$temp_file"
-    printf "%*sSuccessfully downloaded: $final_file" $(( (cols-62)/2 ))
-    sleep 1
+    printf "\n%*sSuccessfully downloaded: $final_file" $(( (cols-62)/2 ))
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 0
   else
-    printf "%*sConversion failed!" $(( (cols-62)/2 ))
+    printf "%*sConversion failed!" $(( (cols-62)/2 ))    
     [ -f "$temp_file" ] && rm "$temp_file"
     [ -f "$final_file" ] && rm "$final_file"
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 1
   fi
 }
@@ -527,18 +516,15 @@ process_song() {
   local query="$1"
   local loop=false
   local list_mode=false
-
   # Check for flags
   if [[ "$query" == *" -r" ]]; then
     loop=true
     query="${query%% -r}" # Remove the -r flag
   fi
-
   if [[ "$query" == *" -l" ]]; then
     list_mode=true
     query="${query%% -l}" # Remove the -l flag
   fi
-
   if [ "$list_mode" = true ]; then
     search_with_list "$query" "$loop"
   else
@@ -566,7 +552,6 @@ process_song() {
     echo
     play_stream "$stream_url" "$loop"
   fi
-
   return 0
 }
 
