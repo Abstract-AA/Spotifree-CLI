@@ -278,20 +278,16 @@ search_with_list() {
     printf " %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
-  hr 
-  
-  # Get user selection
-  echo -n " Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
-  read -r choice
-  
+  hr   
+  echo -n " Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: " # Get user selection
+  read -r choice  
   if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= SEARCH_RESULTS_SIZE)); then
     # Extract the selected video ID
     local selected_line=$(echo "$search_results" | sed -n "${choice}p")
     local video_id=$(echo "$selected_line" | awk -F '|' '{print $2}' | xargs)
     local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)   
     
-    echo " Selected: $video_title"
-    
+    echo " Selected: $video_title"    
     stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1    
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$video_title"
@@ -350,13 +346,15 @@ show_history() {
     read -r mode
     case "$mode" in
       1)
-        printf "%*sPlaying: $selected_query" $(( (cols-62)/2 )) ""
+        clear && print_header && print_main_header && echo && print_main_menu 
+        printf "%*sPlaying: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" false
         ;;
       2)
-        printf "%*sLooping: $selected_query" $(( (cols-62)/2 )) 
+        clear && print_header && print_main_header && echo && print_main_menu 
+        printf "%*sLooping: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" true
@@ -545,36 +543,27 @@ process_song() {
     search_with_list "$query" "$loop"
   else
     printf "%*sSearching and streaming: $query " $(( (cols-62)/2 ))
-
     # This will start the spinner animation
-    (while :; do for var in / - \\ \|; do echo -en "\r                  Searching and streaming: $query $var"; sleep .1; done; done) &
+    (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Searching and streaming: %s %s" "$padding" "" "$var" "$query"; sleep 0.1; done; done) &
     LOAD_PID=$!
-    disown $LOAD_PID
-
-    # Perform the actual query
-    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query" 2>/dev/null) || {
+    disown $LOAD_PID    
+    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query" 2>/dev/null) || {                              
       kill "$LOAD_PID" &>/dev/null
       printf "%*sFailed to find stream for: $query" $(( (cols-62)/2 ))
       sleep 1
       return 0
-    }
-
-    # This will kill the spinner animation
-    kill "$LOAD_PID" &>/dev/null
+    }    
+    kill "$LOAD_PID" &>/dev/null # This will kill the spinner animation
     wait "$LOAD_PID" 2>/dev/null
-
-    echo -e "\r                  Streaming: $query                        "
-
     if [ -z "$stream_url" ]; then
       printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
       sleep 1
       return 0
     fi
-
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$query"
     add_to_history "$query" "$stream_url"
-
+    echo
     play_stream "$stream_url" "$loop"
   fi
 
