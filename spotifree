@@ -86,13 +86,12 @@ play_stream() {
   local stream_url="$1"
   local loop="$2"
   if [ "$loop" = true ]; then
-    printf "%*sLoop mode activated" $(( (cols-62)/2 ))
     echo
-    hr
+    hr "_"
     mpv --no-video --loop "$stream_url" --msg-level=ffmpeg=no,network=no
   else
   echo
-    hr
+    hr "_"
     mpv --no-video "$stream_url" --msg-level=ffmpeg=no,network=no
   fi
   sleep 1
@@ -235,7 +234,7 @@ browse_local_files() {
 search_with_list() {
   local query="$1"
   local loop="$2"
-  echo -n "                  Searching for: $query "
+  printf "%*sSearching for: $query" $(( (cols-62)/2 ))
 
   # Start spinner animation in background
   (while :; do for var in / - \\ \|; do echo -en "\r                  Searching for: $query $var"; sleep .1; done; done) &
@@ -253,47 +252,46 @@ search_with_list() {
   # Kill the spinner
   kill "$LOAD_PID" &>/dev/null
   wait "$LOAD_PID" 2>/dev/null
-
+  
+  
   echo -e "\r                  Search complete for: $query       "
 
   if [ -z "$search_results" ]; then
-    echo "                  No results found for: $query"
+    printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
     sleep 1
     return 0
   fi
   
   echo
-  center "====================[ Search Results ]===================="
+  hr_text "-" "[ Search Results ]"
   local i=1
   while IFS= read -r line; do
     # Split the line into parts
     IFS="|" read -r title id duration <<< "$line"
-    printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
+    printf " %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
-  center "========================================================="
+  hr 
   
   # Get user selection
-  echo -n "                  Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
+  echo -n " Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
   read -r choice
   
   if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= SEARCH_RESULTS_SIZE)); then
     # Extract the selected video ID
     local selected_line=$(echo "$search_results" | sed -n "${choice}p")
     local video_id=$(echo "$selected_line" | awk -F '|' '{print $2}' | xargs)
-    local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)
+    local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)   
     
-    echo "                  Selected: $video_title"
-    echo
-    stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1
+    echo " Selected: $video_title"
     
+    stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1    
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$video_title"
-    add_to_history "$video_title" "$stream_url"
-    
+    add_to_history "$video_title" "$stream_url"    
     play_stream "$stream_url" "$loop"
   else
-    echo "                  Cancelled."
+    echo " Cancelled."
     sleep 1
   fi
 }
