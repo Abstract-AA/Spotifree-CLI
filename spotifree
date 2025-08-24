@@ -39,21 +39,25 @@ hr() {
 }
 
 hr_text() {
-    local char="${1:--}"           # Default to '-' if no char is passed
-    shift
-    local text="$*"                # All remaining arguments as the text
-    local cols=$(tput cols)        # Terminal width
-    local content="${text}"
-    local content_len=${#content}
-    local pad_len=$(( (cols - content_len) / 2 )) # Calculate padding
-    local extra=$(( (cols - content_len) % 2 ))  # To deal with odd widths
-    if (( pad_len < 0 )); then        
-        echo "$content" # If text is too long, just print it
-    else
-        printf '%*s' "$pad_len" '' | tr ' ' "$char"
-        printf "%s" "$content"
-        printf '%*s\n' "$((pad_len + extra))" '' | tr ' ' "$char"
-    fi
+    local char="$1"               # Fill character
+    local text="$2"               # Text to display
+    local position_factor="${3:-2}"  # Default to center (2) if not provided
+    local cols=$(tput cols)
+    local text_len=${#text} 
+    if ! [[ "$position_factor" =~ ^[1-9][0-9]*$ ]]; then
+        echo "Error: position must be a positive integer" >&2
+        return 1
+    fi    
+    local total_fill=$(( cols - text_len )) # Calculate total fill space needed      
+    if (( total_fill < 0 )); then # Ensure we don't have negative fill space
+        echo "$text"
+        return
+    fi   
+    local left_fill=$(( total_fill / position_factor )) # Calculate left fill based on position_factor
+    local right_fill=$(( total_fill - left_fill ))
+    printf '%*s' "$left_fill" '' | tr ' ' "$char" # Print the line
+    printf "%s" "$text"
+    printf '%*s\n' "$right_fill" '' | tr ' ' "$char"
 }
 
 print_header() {
@@ -100,26 +104,21 @@ play_stream() {
 browse_local_files() {
   local start_dir="$1"
   local current_dir
-
   if [[ -z "$start_dir" || ! -d "$start_dir" ]]; then
     start_dir="$HOME/Music"
   fi
   current_dir="$start_dir"
-
   while true; do
     clear
     print_header
     print_browser_header
     echo
     hr_text "=" "[ Browsing: $current_dir ]"
-
     local items=()
     local index=1
-
     echo "  b. .. (return to previous directory)"
-
-    # List folders first, then files
-    while IFS= read -r entry; do
+    
+    while IFS= read -r entry; do # List folders first, then files
       items+=("$entry")
     done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type d | sort)
 
@@ -171,7 +170,7 @@ browse_local_files() {
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
         v)
           echo
-          hr_text "-" "[ Playlist Contents ]"
+          hr_text "-" "[ Playlist Contents ]" "10"
           if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
             echo "  Playlist is empty."
           else
@@ -263,7 +262,7 @@ search_with_list() {
   fi
   
   echo
-  hr_text "-" "[ Search Results ]"
+  hr_text "-" "[ Search Results ]" "10"
   local i=1
   while IFS= read -r line; do
     # Split the line into parts
