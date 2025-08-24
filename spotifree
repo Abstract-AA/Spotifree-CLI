@@ -85,6 +85,14 @@ print_browser_header() {
     hr
 }
 
+print_main_menu(){
+    center "=========================[ Main Menu ]========================="
+    center "  Enter a song name to start listening"
+    center "  Enter multiple songs separated by asterisks for a playlist"
+    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
+    center "  Add '-l' at the end to show a list of results"
+    center "==============================================================="
+}
 
 play_stream() {
   local stream_url="$1"
@@ -287,7 +295,14 @@ search_with_list() {
     stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1    
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$video_title"
-    add_to_history "$video_title" "$stream_url"    
+    add_to_history "$video_title" "$stream_url"
+    clear
+    print_header
+    print_main_header
+    echo
+    print_main_menu
+    printf "%*sNow playing: $video_title" $(( (cols-62)/2 ))
+    echo
     play_stream "$stream_url" "$loop"
   else
     echo " Cancelled."
@@ -571,12 +586,7 @@ main_loop() {
     print_header
     print_main_header
     echo
-    center "=========================[ Main Menu ]========================="
-    center "  Enter a song name to start listening"
-    center "  Enter multiple songs separated by asterisks for a playlist"
-    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
-    center "  Add '-l' at the end to show a list of results"
-    center "==============================================================="
+    print_main_menu
     printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) ""
     read -r input
     
