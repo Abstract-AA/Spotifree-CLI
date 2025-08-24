@@ -248,15 +248,16 @@ search_with_list() {
   local search_results
   search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s" 2>/dev/null) || {
     kill "$LOAD_PID" &>/dev/null
-    echo -e "\r                  Failed to search for: $query"
-    return 1
+    printf "\n%*sFailed to search for: $query" $(( (cols-62)/2 ))
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
+    return 0
   }  
   kill "$LOAD_PID" &>/dev/null # Kill the spinner
   wait "$LOAD_PID" 2>/dev/null
   
   if [ -z "$search_results" ]; then
-    printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
-    sleep 1
+    printf "\n%*sNo results found for: $query" $(( (cols-62)/2 ))
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 0
   fi 
   echo
