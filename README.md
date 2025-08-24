@@ -15,10 +15,7 @@ Spotifree is a bash script that transforms your terminal into a music streaming 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/5d6bfe4f9ff9b68103b03eebcc7c769ca87de5a5/Screenshot%20From%202025-08-11%2021-21-14.png)
-
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/ba29a07f5940b7c9c62982677c373fd6d8ab321c/Screenshot%20From%202025-08-11%2021-26-16.png)
-
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-41-47.png)
 
 ## Features
 
@@ -50,6 +47,10 @@ wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main
 chmod +x spotifree
 
 ./spotifree
+
+# Or, simply move to the directory where the file is located and run
+
+bash spotifree
 
 ```
 
@@ -99,6 +100,12 @@ deactivate # Deactivate environment when done
 - Add audio bars
 
 - Add general interface improvements
+
+- Add a text file based shareable playlist feature
+
+## Gallery
+
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-46-16.png)
 
 ## Legal Disclaimer & Ethical Use
 
