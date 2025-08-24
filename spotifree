@@ -10,8 +10,6 @@ TARGET_DIR="$HOME/Music"
 TMP_DIR="/tmp/ytmp3"
 AUDIO_QUALITY="64"  # Default quality in kbps
 mkdir -p "$TMP_DIR" "$TARGET_DIR"
-
-# Cache variables
 LAST_STREAM_URL=""
 LAST_QUERY=""
 declare -A SONG_CACHE
@@ -20,12 +18,10 @@ HISTORY=()
 CACHE_LIMIT=20
 LOOP_MODE=false
 SEARCH_RESULTS_SIZE=8 
-
 cols=$(tput cols)
 lines=$(tput lines)
 
-# Updates the dimensions whenever the user resizes
-trap 'cols=$(tput cols); lines=$(tput lines)' WINCH
+trap 'cols=$(tput cols); lines=$(tput lines)' WINCH # Updates the dimensions whenever the user resizes
 
 center() {
     local text="$1"
@@ -35,9 +31,32 @@ center() {
 }
 
 hr() {
-    printf '%*s\n' "$cols" '' | tr ' ' '-'
+    local char="${1:--}"      # Default to '-' if no argument is given
+    local cols=$(tput cols)   # Get terminal width
+    printf '%*s\n' "$cols" '' | tr ' ' "$char"
 }
 
+hr_text() {
+    local char="$1"  # Fill character
+    local text="$2"  # Text to display
+    local position_factor="${3:-2}"  # Default to center (2) if not provided
+    local cols=$(tput cols)
+    local text_len=${#text} 
+    if ! [[ "$position_factor" =~ ^[1-9][0-9]*$ ]]; then
+        echo "Error: position must be a positive integer" >&2
+        return 1
+    fi    
+    local total_fill=$(( cols - text_len )) # Calculate total fill space needed      
+    if (( total_fill < 0 )); then # Ensure we don't have negative fill space
+        echo "$text"
+        return
+    fi   
+    local left_fill=$(( total_fill / position_factor )) # Calculate left fill based on position_factor
+    local right_fill=$(( total_fill - left_fill ))
+    printf '%*s' "$left_fill" '' | tr ' ' "$char" # Print the line
+    printf "%s" "$text"
+    printf '%*s\n' "$right_fill" '' | tr ' ' "$char"
+}
 
 print_header() {
   clear
@@ -47,7 +66,7 @@ print_header() {
   center "/___//___//___//___/     /___// .__/\___/\__//_//_/ /_/   \__/ \__/     /___//___//___//___/ "
   center "                             /_/                                                             "
   echo
-  center "                                 Your free CLI Music Platform                                "
+  center "                                   Your Free Music Platform                                  "
   hr
 }
 
@@ -64,18 +83,25 @@ print_browser_header() {
     hr
 }
 
+print_main_menu(){
+    center "=========================[ Main Menu ]========================="
+    center "  Enter a song name to start listening"
+    center "  Enter multiple songs separated by asterisks for a playlist"
+    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
+    center "  Add '-l' at the end to show a list of results"
+    center "==============================================================="
+}
 
 play_stream() {
   local stream_url="$1"
   local loop="$2"
   if [ "$loop" = true ]; then
-    echo "                  Loop mode activated"
     echo
-    hr
+    hr "_"
     mpv --no-video --loop "$stream_url" --msg-level=ffmpeg=no,network=no
   else
   echo
-    hr
+    hr "_"
     mpv --no-video "$stream_url" --msg-level=ffmpeg=no,network=no
   fi
   sleep 1
@@ -84,26 +110,21 @@ play_stream() {
 browse_local_files() {
   local start_dir="$1"
   local current_dir
-
   if [[ -z "$start_dir" || ! -d "$start_dir" ]]; then
     start_dir="$HOME/Music"
   fi
   current_dir="$start_dir"
-
   while true; do
     clear
     print_header
     print_browser_header
     echo
-    echo "  ======================[ Browsing: $current_dir ]======================"
-
+    hr_text "=" "[ Browsing: $current_dir ]"
     local items=()
     local index=1
-
     echo "  b. .. (return to previous directory)"
-
-    # List folders first, then files
-    while IFS= read -r entry; do
+    
+    while IFS= read -r entry; do # List folders first, then files
       items+=("$entry")
     done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type d | sort)
 
@@ -120,7 +141,7 @@ browse_local_files() {
         printf "  %d. %s\n" $((i+1)) "$base_name"
       fi
     done
-    echo "  ============================================================================"
+    hr "="
     echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
     echo -n "  Enter number >>> "
     read -r -a input_parts
@@ -155,7 +176,7 @@ browse_local_files() {
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
         v)
           echo
-          echo "  ===========================[ Playlist Contents ]==========================="
+          hr_text "-" "[ Playlist Contents ]" "10"
           if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
             echo "  Playlist is empty."
           else
@@ -165,7 +186,7 @@ browse_local_files() {
               printf "  %2d. %s\n" $((i+1)) "$name"
             done
           fi
-          echo "  ==========================================================================="
+          hr
           echo
           read -rp "  Press enter to continue..." _
           continue 2
@@ -218,65 +239,59 @@ browse_local_files() {
 search_with_list() {
   local query="$1"
   local loop="$2"
-  echo -n "                  Searching for: $query "
-
+  printf "%*sSearching for: $query" $(( (cols-62)/2 ))
   # Start spinner animation in background
-  (while :; do for var in / - \\ \|; do echo -en "\r                  Searching for: $query $var"; sleep .1; done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*sSearching for: %s %s" "$padding" "" "$query" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
-
   # Perform the actual search
   local search_results
   search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s" 2>/dev/null) || {
     kill "$LOAD_PID" &>/dev/null
     echo -e "\r                  Failed to search for: $query"
     return 1
-  }
-
-  # Kill the spinner
-  kill "$LOAD_PID" &>/dev/null
+  }  
+  kill "$LOAD_PID" &>/dev/null # Kill the spinner
   wait "$LOAD_PID" 2>/dev/null
-
-  echo -e "\r                  Search complete for: $query       "
-
+  
   if [ -z "$search_results" ]; then
-    echo "                  No results found for: $query"
+    printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
     sleep 1
     return 0
-  fi
-  
+  fi 
   echo
-  echo "                  ====================[ Search Results ]===================="
+  hr_text "-" "[ Search Results ]" "10"
   local i=1
   while IFS= read -r line; do
     # Split the line into parts
     IFS="|" read -r title id duration <<< "$line"
-    printf "                  %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
+    printf " %d. %s (%s)\n" "$i" "$(echo "$title" | xargs)" "$(echo "$duration" | xargs)"
     i=$((i+1))
   done <<< "$search_results"
-  echo "                  ========================================================="
-  
-  # Get user selection
-  echo -n "                  Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: "
-  read -r choice
-  
+  hr   
+  echo -n " Select a song (1-$SEARCH_RESULTS_SIZE) or 'q' to cancel: " # Get user selection
+  read -r choice  
   if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= SEARCH_RESULTS_SIZE)); then
     # Extract the selected video ID
     local selected_line=$(echo "$search_results" | sed -n "${choice}p")
     local video_id=$(echo "$selected_line" | awk -F '|' '{print $2}' | xargs)
-    local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)
+    local video_title=$(echo "$selected_line" | awk -F '|' '{print $1}' | xargs)   
     
-    echo "                  Selected: $video_title"
-    echo
-    stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1
-    
+    echo " Selected: $video_title"    
+    stream_url=$(yt-dlp -f bestaudio -g "$video_id") || return 1    
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$video_title"
     add_to_history "$video_title" "$stream_url"
-    
+    clear
+    print_header
+    print_main_header
+    echo
+    print_main_menu
+    printf "%*sNow playing: $video_title" $(( (cols-62)/2 ))
+    echo
     play_stream "$stream_url" "$loop"
   else
-    echo "                  Cancelled."
+    echo " Cancelled."
     sleep 1
   fi
 }
@@ -301,64 +316,62 @@ add_to_history() {
 
 show_history() {
   if [[ ${#HISTORY[@]} -eq 0 ]]; then
-    echo "                  No songs in history yet!"
+    printf "%*sNo songs in history yet!" $(( (cols-62)/2 )) 
     sleep 1
     return
   fi
   echo
-  echo "                  ==============[ Recently Streamed (Last $CACHE_LIMIT) ]=============="
+  center "================[ Recently Streamed (Last $CACHE_LIMIT) ]================"
   for i in "${!HISTORY[@]}"; do 
-    echo "                         $((i+1)). ${HISTORY[$i]}"
+    center "$((i+1)). ${HISTORY[$i]}"
   done
-  echo "                  ========================================================="
+  center "==============================================================="
+  echo
   
-  echo -ne "                  Enter number to replay (or any key to cancel): "
+  printf "%*sEnter number (or any key to cancel): " $(( (cols-62)/2 )) 
   read -r choice
   if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#HISTORY[@]} ]]; then
     local selected_query="${HISTORY[$((choice-1))]}"
-    echo -n "                  Replay options: [1] Once  [2] Loop  [3] Cancel: "
+    printf "%*sReplay options: [1] Once  [2] Loop  [3] Cancel:" $(( (cols-62)/2 ))
     read -r mode
     case "$mode" in
       1)
-        echo "                  Playing: $selected_query"
+        clear && print_header && print_main_header && echo && print_main_menu 
+        printf "%*sPlaying: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" false
         ;;
       2)
-        echo "                  Looping: $selected_query"
+        clear && print_header && print_main_header && echo && print_main_menu 
+        printf "%*sLooping: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" true
         ;;
       *)
-        echo "Cancelled."
+        printf "%*sCancelled." $(( (cols-62)/2 ))
+        sleep 0.5
         ;;
     esac
   else
-    echo "Cancelled."
+    printf "%*sCancelled." $(( (cols-62)/2 ))
   fi
 }
 
 download_last() {
   if [ -z "$LAST_STREAM_URL" ]; then
-    echo "                  No song to download! Please play a song first."
+    printf "%*sNo song to download! Please play a song first." $(( (cols-62)/2 ))
     sleep 0.5
     return 1
   fi
-  echo "                  Destination: $TARGET_DIR"
-  echo "                  Audio Quality: ${AUDIO_QUALITY}kbps"
-
+  printf "%*sDestination: $TARGET_DIR" $(( (cols-62)/2 )) ""
+  printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
   clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
   temp_file="${TMP_DIR}/${clean_title}.opus"
   final_file="${TARGET_DIR}/${clean_title}.mp3"
 
-  # ---------- DOWNLOAD ----------
-  echo -n "                  "
-  (while :; do for var in / - \\ \|; do
-      echo -en "\r                  $var Downloading: $LAST_QUERY, please wait..."
-      sleep .1
-    done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
@@ -366,38 +379,33 @@ download_last() {
   download_status=$?
 
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r"
 
   if [ $download_status -ne 0 ]; then
-    echo "                  Download failed!"
+    printf "%*sDownload failed!" $(( (cols-62)/2 ))
     [ -f "$temp_file" ] && rm "$temp_file"
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 1
   fi
 
-  echo -n "                  "
-  (while :; do for var in / - \\ \|; do
-      echo -en "\r                  $var Converting to MP3..."
-      sleep .1
-    done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
   ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
   convert_status=$?
-
   kill $LOAD_PID 2>/dev/null
-  echo -en "\r                                                  \r"
 
   if [ $convert_status -eq 0 ]; then
-    echo "                  Conversion complete!"
+    printf "%*sConversion complete!" $(( (cols-62)/2 ))
     rm "$temp_file"
-    echo "                  Successfully downloaded: $final_file"
-    sleep 1
+    printf "\n%*sSuccessfully downloaded: $final_file" $(( (cols-62)/2 ))
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 0
   else
-    echo "                  Conversion failed!"
+    printf "%*sConversion failed!" $(( (cols-62)/2 ))    
     [ -f "$temp_file" ] && rm "$temp_file"
     [ -f "$final_file" ] && rm "$final_file"
+    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 1
   fi
 }
@@ -405,13 +413,15 @@ download_last() {
 settings_menu() {
   while true; do
     print_header
-    echo "                  ======================[ Settings ]======================"
-    echo "                     1. Current download directory: $TARGET_DIR"
-    echo "                     2. Current audio quality: ${AUDIO_QUALITY}kbps"
-    echo "                     3. Current search list size: ${SEARCH_RESULTS_SIZE}"
-    echo "                  ========================================================"
-    echo "                  Enter option number to change (q to return to main menu)"
-    echo -n "                  >>> "
+    echo
+    center "========================[ Settings ]========================"
+    center "1. Current download directory: $TARGET_DIR"
+    center "2. Current audio quality: ${AUDIO_QUALITY}kbps"
+    center "3. Current search list size: ${SEARCH_RESULTS_SIZE}"
+    center "============================================================"
+    printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
+    printf "\n%*s>>>" $(( (cols-62)/2 )) 
+    ##echo -n ">>> "
     read -r reply
     
     case "$reply" in
@@ -419,41 +429,43 @@ settings_menu() {
         return 0
         ;;
       1)
-        echo "                  Current download directory: $TARGET_DIR"
-        echo "                  Enter new directory path (or leave blank to keep current):"
-        echo -n "                  >>>Enter your choice: "       
+        echo
+        printf "%*sCurrent download directory: $TARGET_DIR" $(( (cols-62)/2 )) 
+        printf "\n%*sEnter new directory path (or leave blank to keep current):" $(( (cols - 62) / 2 ))
+        echo
+        printf "%*s>>>" $(( (cols-62)/2 )) ""       
         read -r new_dir
         if [ -n "$new_dir" ]; then
           if [ -d "$new_dir" ]; then
             TARGET_DIR="$new_dir"
-            mkdir -p "$TARGET_DIR"
-            echo "                  Download directory changed to: $TARGET_DIR"
+            mkdir -p "$TARGET_DIR" 
+            printf "%*sDownload directory changed to: $TARGET_DIR" $(( (cols-62)/2 )) 
           else
-            echo "                  Directory does not exist. Would you like to create it? (y/n)"
+            printf "%*sDirectory does not exist. Would you like to create it? (y/n):" $(( (cols-62)/2 )) 
             read -r create_dir
             if [ "$create_dir" = "y" ]; then
               mkdir -p "$new_dir"
               if [ $? -eq 0 ]; then
                 TARGET_DIR="$new_dir"
-                echo "                  Download directory changed to: $TARGET_DIR"
+                printf "%*sDownload directory changed to: $TARGET_DIR" $(( (cols-62)/2 )) 
               else
-                echo "                  Failed to create directory. Please check permissions."
+                printf "%*sFailed to create directory. Please check permissions." $(( (cols-62)/2 )) 
               fi
             else
-              echo "                  Directory not changed."
+              printf "%*sDirectory not changed." $(( (cols-62)/2 )) ""
             fi
           fi
         fi
         ;;
       2)
-        echo "                         Current audio quality: ${AUDIO_QUALITY}kbps"
-        echo "                         Select new audio quality:"
-        echo "                         1. 64kbps (fastest, lowest quality)"
-        echo "                         2. 128kbps"
-        echo "                         3. 192kbps"
-        echo "                         4. 256kbps"
-        echo "                         5. 320kbps (slowest, best quality)"
-        echo "                         Enter choice (1-5):"
+        center "====================================="
+        center "1. 64kbps (fastest, lowest quality)"
+        center "2. 128kbps                         "
+        center "3. 192kbps                         "
+        center "4. 256kbps                         "
+        center "5. 320kbps (slowest, best quality)"
+        center "====================================="
+        printf "%*sEnter choice (1-5):" $(( (cols-62)/2 )) ""
         read -r quality_choice
         
         case "$quality_choice" in
@@ -463,24 +475,26 @@ settings_menu() {
           4) AUDIO_QUALITY="256" ;;
           5) AUDIO_QUALITY="320" ;;
           *)
-            echo "                  Invalid choice. Quality remains ${AUDIO_QUALITY}kbps"
+            printf "%*sInvalid choice. Quality remains ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
+            sleep 1
             ;;
         esac
-        echo "                  Audio quality set to: ${AUDIO_QUALITY}kbps"
+        printf "\n%*sAudio quality set to: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
+        sleep 1
         ;;
        3)
-  	echo "                         Current search results size: $SEARCH_RESULTS_SIZE"
-  	echo "                         Enter new search results size (1-20):"
+        printf "%*sCurrent search results size: $SEARCH_RESULTS_SIZE" $(( (cols-62)/2 ))
+        printf "\n%*sEnter new search results size (1-25):" $(( (cols - 62) / 2 ))
   	read -r new_size
   	if [[ "$new_size" =~ ^[0-9]+$ ]] && ((new_size >= 1 && new_size <= 25)); then
     	  SEARCH_RESULTS_SIZE=$new_size
-    	  echo "                  Search results size set to: $SEARCH_RESULTS_SIZE"
+    	  printf "\n%*sSearch results size set to: $SEARCH_RESULTS_SIZE" $(( (cols - 62) / 2 ))
   	else
-    	  echo "                  Invalid size. Must be between 1 and 25."
+  	  printf "\n%*sInvalid size. Must be between 1 and 25." $(( (cols - 62) / 2 ))
   	fi
   	;;
       *)
-        echo "                  Invalid option"
+        printf "%*sInvalid option" $(( (cols-62)/2 ))
         ;;
     esac
     
@@ -492,54 +506,42 @@ process_song() {
   local query="$1"
   local loop=false
   local list_mode=false
-
   # Check for flags
   if [[ "$query" == *" -r" ]]; then
     loop=true
     query="${query%% -r}" # Remove the -r flag
   fi
-
   if [[ "$query" == *" -l" ]]; then
     list_mode=true
     query="${query%% -l}" # Remove the -l flag
   fi
-
   if [ "$list_mode" = true ]; then
     search_with_list "$query" "$loop"
   else
-    echo -n "                  Searching and streaming: $query "
-
+    printf "%*sSearching and streaming: $query " $(( (cols-62)/2 ))
     # This will start the spinner animation
-    (while :; do for var in / - \\ \|; do echo -en "\r                  Searching and streaming: $query $var"; sleep .1; done; done) &
+    (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Searching and streaming: %s %s" "$padding" "" "$var" "$query"; sleep 0.1; done; done) &
     LOAD_PID=$!
-    disown $LOAD_PID
-
-    # Perform the actual query
-    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query" 2>/dev/null) || {
+    disown $LOAD_PID    
+    stream_url=$(yt-dlp -f bestaudio -g "ytsearch1:$query" 2>/dev/null) || {                              
       kill "$LOAD_PID" &>/dev/null
-      echo -e "\r                  Failed to find stream for: $query"
-      return 1
-    }
-
-    # This will kill the spinner animation
-    kill "$LOAD_PID" &>/dev/null
+      printf "%*sFailed to find stream for: $query" $(( (cols-62)/2 ))
+      sleep 1
+      return 0
+    }    
+    kill "$LOAD_PID" &>/dev/null # This will kill the spinner animation
     wait "$LOAD_PID" 2>/dev/null
-
-    echo -e "\r                  Streaming: $query                        "
-
     if [ -z "$stream_url" ]; then
-      echo "                  No results found for: $query"
+      printf "%*sNo results found for: $query" $(( (cols-62)/2 ))
       sleep 1
       return 0
     fi
-
     LAST_STREAM_URL="$stream_url"
     LAST_QUERY="$query"
     add_to_history "$query" "$stream_url"
-
+    echo
     play_stream "$stream_url" "$loop"
   fi
-
   return 0
 }
 
@@ -548,13 +550,7 @@ main_loop() {
     print_header
     print_main_header
     echo
-    center "=========================[ Main Menu ]========================="
-    center "  Enter a song name to start listening"
-    center "  Enter multiple songs separated by asterisks for a playlist"
-    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
-    center "  Add '-l' at the end to show a list of results"
-    center "==============================================================="
-    echo
+    print_main_menu
     printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) ""
     read -r input
     
@@ -564,23 +560,23 @@ main_loop() {
         ;;
       r)
         if [ -z "$LAST_STREAM_URL" ]; then
-          echo "                  No song to repeat! Please search for a song first."
+          printf "%*sNo song to repeat! Please search for a song first." $(( (cols-62)/2 ))
           sleep 1
           continue
         fi
-        echo -n "                  Repeat options: [1] Once  [2] Loop  [3] Cancel: "
+        printf "%*sRepeat options: [1] Once  [2] Loop  [3] Cancel: " $(( ( $(tput cols) - 62 ) / 2 ))
         read -r mode
         case "$mode" in
           1)
-            echo "                  Repeating: $LAST_QUERY"
+            printf "%*sRepeating: $LAST_QUERY" $(( (cols-62)/2 ))
             play_stream "$LAST_STREAM_URL" false
             ;;
           2)
-            echo "                  Looping: $LAST_QUERY"
+            printf "%*sLooping: $LAST_QUERY" $(( (cols-62)/2 ))
             play_stream "$LAST_STREAM_URL" true
             ;;
           *)
-            echo "                  Cancelled."
+            printf "%*sCancelled." $(( (cols-62)/2 )) ""
             ;;
         esac
         ;;
@@ -600,12 +596,11 @@ main_loop() {
         ;;
       *)
         if [[ -z "$input" ]]; then
-         echo "                  No input entered. Returning to menu..."
+         printf "%*sNo input entered. Returning to menu..." $(( (cols-62)/2 ))
          sleep 1
          continue
-        fi
-        # this will handle the comma-separated playlist
-        if [[ "$input" == *** ]]; then
+        fi      
+        if [[ "$input" == *** ]]; then # this will handle the comma-separated playlist
           IFS='*' read -ra songs <<< "$input"
           for song in "${songs[@]}"; do
             song=$(echo "$song" | xargs) # this trims whitespace has to be here
@@ -619,5 +614,4 @@ main_loop() {
     esac
   done
 }
-
 main_loop
