@@ -35,11 +35,19 @@ First, to install the dependencies run the following in a system with Bash:
 ```bash
 sudo apt install yt-dlp mpv                 # Debian/Ubuntu
 sudo dnf install yt-dlp mpv                 # Fedora and its derivatives
-sudo apk update && sudo apk add mpv yt-dlp  # Alpine Linux
-sudo pacman -S mpv && sudo pacman -S yt-dlp #Arch linux and its derivatives
+sudo apk add mpv yt-dlp                     # Alpine Linux
+sudo pacman -S mpv yt-dlp                   #Arch linux and its derivatives
 brew install yt-dlp mpv                     # macOS
 ```
+
 Then, move on to downloading the main file.
+
+```bash
+wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree    
+
+```
+
+Then, make it executable and run.
 
 ```bash
 wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree
@@ -48,9 +56,13 @@ chmod +x spotifree
 
 ./spotifree
 
-# Or, simply move to the directory where the file is located and run
+```
 
-bash spotifree
+Or, simply move to the directory where the file is located and run
+
+```bash
+
+cd "Path/to/your/file" && bash spotifree
 
 ```
 
