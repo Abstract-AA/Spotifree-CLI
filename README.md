@@ -107,6 +107,8 @@ deactivate # Deactivate environment when done
 
 ![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-46-16.png)
 
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/225346312332fcf39302c1083c80ad4d9ba3fdaa/Screenshot%20From%202025-08-25%2018-40-59.png)
+
 ## Legal Disclaimer & Ethical Use
 
 This project, Spotifree CLI, is provided for **educational and personal use only**. By using this software, you acknowledge and agree to the following:
