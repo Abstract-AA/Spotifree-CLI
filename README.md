@@ -26,7 +26,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
 - **Lightweight** - Less than 1 mb, no GUI overhead or resource-heavy apps
-- **Simple Setup** - Just bash + 2 dependencies
+- **Simple Setup** - Just bash 4.0+ and 2 dependencies
 
 ## 📦 Installation
 
@@ -58,7 +58,7 @@ chmod +x spotifree
 
 ```
 
-Or, simply move to the directory where the file is located and run
+Or, simply move to the directory where the file is located and run it like any other bash script
 
 ```bash
 
