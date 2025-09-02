@@ -107,13 +107,15 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-- Add a progress bar that updates as the song plays
+- support for multiple audio formats other than mp3
 
-- Add audio bars
+- text file based shareable playlist feature
 
-- Add general interface improvements
+- progress bar that updates as the song plays
 
-- Add a text file based shareable playlist feature
+- audio bars
+
+- general interface improvements
 
 ## Gallery
 
