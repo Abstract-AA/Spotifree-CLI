@@ -26,7 +26,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
 - **Lightweight** - Less than 1 mb, no GUI overhead or resource-heavy apps
-- **Simple Setup** - Just bash + 2 dependencies
+- **Simple Setup** - Just bash 4.0+ and 2 dependencies
 
 ## 📦 Installation
 
@@ -35,11 +35,19 @@ First, to install the dependencies run the following in a system with Bash:
 ```bash
 sudo apt install yt-dlp mpv                 # Debian/Ubuntu
 sudo dnf install yt-dlp mpv                 # Fedora and its derivatives
-sudo apk update && sudo apk add mpv yt-dlp  # Alpine Linux
-sudo pacman -S mpv && sudo pacman -S yt-dlp #Arch linux and its derivatives
+sudo apk add mpv yt-dlp                     # Alpine Linux
+sudo pacman -S mpv yt-dlp                   #Arch linux and its derivatives
 brew install yt-dlp mpv                     # macOS
 ```
+
 Then, move on to downloading the main file.
+
+```bash
+wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree    
+
+```
+
+Then, make it executable and run.
 
 ```bash
 wget https://raw.githubusercontent.com/Abstract-AA/Spotifree-CLI/refs/heads/main/spotifree
@@ -48,9 +56,13 @@ chmod +x spotifree
 
 ./spotifree
 
-# Or, simply move to the directory where the file is located and run
+```
 
-bash spotifree
+Or, simply move to the directory where the file is located and run it like any other bash script
+
+```bash
+
+cd "Path/to/your/file" && bash spotifree
 
 ```
 
@@ -95,17 +107,21 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-- Add a progress bar that updates as the song plays
+- support for multiple audio formats other than mp3
 
-- Add audio bars
+- text file based shareable playlist feature
 
-- Add general interface improvements
+- progress bar that updates as the song plays
 
-- Add a text file based shareable playlist feature
+- audio bars
+
+- general interface improvements
 
 ## Gallery
 
 ![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-46-16.png)
+
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/225346312332fcf39302c1083c80ad4d9ba3fdaa/Screenshot%20From%202025-08-25%2018-40-59.png)
 
 ## Legal Disclaimer & Ethical Use
 
