@@ -213,7 +213,8 @@ browse_local_files() {
             echo "  Added to playlist: $(basename "$selected")"
             sleep 0.5
           else
-            echo "  Now playing: $(basename "$selected")"
+            echo
+            echo "  >Now playing: $(basename "$selected")"
             if [ "$loop" = true ]; then
               echo "  Loop mode activated"
               echo
@@ -260,6 +261,7 @@ search_with_list() {
     read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
     return 0
   fi 
+  echo
   echo
   hr_text "-" "[ Search Results ]" "10"
   local i=1
