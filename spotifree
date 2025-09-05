@@ -433,12 +433,12 @@ settings_menu() {
   while true; do
     print_header
     echo
-    center "========================[ Settings ]========================"
+    center "=========================[ Settings ]========================="
     center "1. Current download directory: $TARGET_DIR"
     center "2. Current audio quality: ${AUDIO_QUALITY}kbps"
     center "3. Current search list size: ${SEARCH_RESULTS_SIZE}"
     center "4. Current download file format: $AUDIO_FORMAT"
-    center "============================================================"
+    center "=============================================================="
     printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
     printf "\n%*s>>>" $(( (cols-62)/2 )) 
     ##echo -n ">>> "
