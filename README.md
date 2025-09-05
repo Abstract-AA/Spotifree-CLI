@@ -11,18 +11,18 @@
 
 ## Overview
 
-Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. 
+Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. The project aims to integrate streaming with local audio files. 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-41-47.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-30-14.png)
 
 ## Features
 
 - **Instant Search** - Play any song with a single command
-- **Download Audio files** - Any song can be downloaded
+- **Download Audio files** - Any song can be downloaded in mp3, ogg, aac, OPUS and FLAC. Audio quality in kbps can also be changed
 - **Playlists** - Create playlists by writing multiple song names separated by asterisks or by using the "-p" flag when file browsing
-- **Local Audio File Support** - A file browser is included, and any local audio files can also be played
+- **Local File Browser** - Any local audio files can also be played
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
 - **Lightweight** - Less than 1 mb, no GUI overhead or resource-heavy apps
@@ -107,8 +107,6 @@ deactivate # Deactivate environment when done
 
 ## Future plans
 
-- support for multiple audio formats other than mp3
-
 - text file based shareable playlist feature
 
 - progress bar that updates as the song plays
@@ -119,9 +117,12 @@ deactivate # Deactivate environment when done
 
 ## Gallery
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/72f2c19b6ebd935816cb308580f42585e200cba9/Screenshot%20From%202025-08-25%2002-46-16.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-29-06.png)
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/225346312332fcf39302c1083c80ad4d9ba3fdaa/Screenshot%20From%202025-08-25%2018-40-59.png)
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-39-37.png)
+
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-43-39.png)
+
 
 ## Legal Disclaimer & Ethical Use
 

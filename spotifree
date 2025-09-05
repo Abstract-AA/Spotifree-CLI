@@ -6,6 +6,7 @@ for cmd in yt-dlp mpv; do
   command -v $cmd >/dev/null 2>&1 || { echo "$cmd is required but not installed. Aborting."; exit 1; }
 done
 
+AUDIO_FORMAT="mp3"
 TMP_DIR="/tmp/ytmp3"
 AUDIO_QUALITY="64"  # Default quality in kbps
 if [ -d "$HOME/Music" ]; then
@@ -88,10 +89,10 @@ print_browser_header() {
 
 print_main_menu(){
     center "=========================[ Main Menu ]========================="
-    center "  Enter a song name to start listening"
-    center "  Enter multiple songs separated by asterisks for a playlist"
-    center "  Add '-r' at the end to loop a song (e.g., 'song -r')"
-    center "  Add '-l' at the end to show a list of results"
+    center "  Enter a song name to start listening                         "
+    center "  Enter multiple songs separated by asterisks for a playlist   "
+    center "  Add '-r' at the end to loop a song (e.g., 'song -r')         "
+    center "  Add '-l' at the end to show a list of results                "
     center "==============================================================="
 }
 
@@ -247,8 +248,7 @@ search_with_list() {
   (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*sSearching for: %s %s" "$padding" "" "$query" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
-  # Perform the actual search
-  local search_results
+  local search_results # Perform the actual search
   search_results=$(yt-dlp "ytsearch${SEARCH_RESULTS_SIZE}:$query" --print "%(title)s | %(id)s | %(duration_string)s" 2>/dev/null) || {
     kill "$LOAD_PID" &>/dev/null
     printf "\n%*sFailed to search for: $query" $(( (cols-62)/2 ))
@@ -365,52 +365,66 @@ show_history() {
 }
 
 download_last() {
-  if [ -z "$LAST_STREAM_URL" ]; then
+  [ -z "$LAST_STREAM_URL" ] && {
     printf "%*sNo song to download! Please play a song first." $(( (cols-62)/2 ))
     sleep 0.5
     return 1
-  fi
-  printf "%*sDestination: $TARGET_DIR" $(( (cols-62)/2 )) ""
-  printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
-  clean_title=$(echo "$LAST_QUERY" | tr -dc '[:alnum:][:space:]' | tr ' ' '_')
-  temp_file="${TMP_DIR}/${clean_title}.opus"
-  final_file="${TARGET_DIR}/${clean_title}.mp3"
+  }
 
+  printf "%*sAudio Format: $AUDIO_FORMAT"   $(( (cols-62)/2 ))
+  printf "\n%*sDestination:  $TARGET_DIR"    $(( (cols-62)/2 ))
+  printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
+
+  # safe file-name stem
+  clean_title=$(printf '%s' "$LAST_QUERY" | tr -cd '[:alnum:][:space:]' | tr ' ' '_')
+  temp_file="${TMP_DIR}/${clean_title}.opus"          # we always grab opus first
+  final_file="${TARGET_DIR}/${clean_title}.${AUDIO_FORMAT}"
+
+  # spinner
   (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
-  yt-dlp --quiet --no-warnings --extract-audio --audio-format opus --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
-  download_status=$?
+  yt-dlp --quiet --no-warnings --extract-audio --audio-format opus \
+         --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
+  dl_st=$?
 
   kill $LOAD_PID 2>/dev/null
-
-  if [ $download_status -ne 0 ]; then
+  if [ $dl_st -ne 0 ]; then
     printf "%*sDownload failed!" $(( (cols-62)/2 ))
-    [ -f "$temp_file" ] && rm "$temp_file"
-    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
+    rm -f "$temp_file"
+    read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
     return 1
   fi
-
+  
+  case "${AUDIO_FORMAT,,}" in      # --------- ffmpeg switch-table ---------
+    mp3)  codec_args=(-c:a libmp3lame -b:a "${AUDIO_QUALITY}k") ;;
+    aac)  codec_args=(-c:a aac -b:a "${AUDIO_QUALITY}k") ;;
+    ogg)  codec_args=(-c:a libvorbis -q:a 6) ;;
+    opus) codec_args=(-c:a libopus -b:a "${AUDIO_QUALITY}k") ;;
+    flac) codec_args=(-c:a flac) ;;
+    *)    codec_args=(-c:a copy) ;;   # fallback
+  esac
+  
+  # spinner for conversion
   (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
-  ffmpeg -v quiet -stats -i "$temp_file" -vn -acodec libmp3lame -q:a 2 "$final_file"
-  convert_status=$?
-  kill $LOAD_PID 2>/dev/null
+  ffmpeg -v quiet -stats -i "$temp_file" -vn "${codec_args[@]}" "$final_file"
+  conv_st=$?
 
-  if [ $convert_status -eq 0 ]; then
-    printf "%*sConversion complete!" $(( (cols-62)/2 ))
-    rm "$temp_file"
-    printf "\n%*sSuccessfully downloaded: $final_file" $(( (cols-62)/2 ))
-    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
+  kill $LOAD_PID 2>/dev/null
+  if [ $conv_st -eq 0 ]; then
+    printf "\n%*sConversion complete!" $(( (cols-62)/2 ))
+    rm -f "$temp_file"
+    printf "\n%*sSaved: "$final_file" " $(( (cols-62)/2 )) 
+    read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
     return 0
   else
-    printf "%*sConversion failed!" $(( (cols-62)/2 ))    
-    [ -f "$temp_file" ] && rm "$temp_file"
-    [ -f "$final_file" ] && rm "$final_file"
-    read -n 1 -s -r -p "$(printf "\n%*sPress any key to continue." $(( (cols-62)/2 )))"
+    printf "\n%*sConversion failed!" $(( (cols-62)/2 ))
+    rm -f "$temp_file" "$final_file"
+    read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
     return 1
   fi
 }
@@ -419,16 +433,16 @@ settings_menu() {
   while true; do
     print_header
     echo
-    center "========================[ Settings ]========================"
+    center "=========================[ Settings ]========================="
     center "1. Current download directory: $TARGET_DIR"
     center "2. Current audio quality: ${AUDIO_QUALITY}kbps"
     center "3. Current search list size: ${SEARCH_RESULTS_SIZE}"
-    center "============================================================"
+    center "4. Current download file format: $AUDIO_FORMAT"
+    center "=============================================================="
     printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
     printf "\n%*s>>>" $(( (cols-62)/2 )) 
     ##echo -n ">>> "
-    read -r reply
-    
+    read -r reply    
     case "$reply" in
       q)
         return 0
@@ -463,16 +477,16 @@ settings_menu() {
         fi
         ;;
       2)
-        center "====================================="
-        center "1. 64kbps (fastest, lowest quality)"
-        center "2. 128kbps                         "
-        center "3. 192kbps                         "
-        center "4. 256kbps                         "
-        center "5. 320kbps (slowest, best quality)"
-        center "====================================="
+        center "==========================================="
+        center "|     (not applicable to FLAC files)      |"
+        center "|  1. 64kbps (fastest, lowest quality)    |"
+        center "|  2. 128kbps                             |"
+        center "|  3. 192kbps                             |"
+        center "|  4. 256kbps                             |"
+        center "|  5. 320kbps (slowest, best quality)     |"
+        center "==========================================="
         printf "%*sEnter choice (1-5):" $(( (cols-62)/2 )) ""
-        read -r quality_choice
-        
+        read -r quality_choice       
         case "$quality_choice" in
           1) AUDIO_QUALITY="64" ;;
           2) AUDIO_QUALITY="128" ;;
@@ -480,12 +494,12 @@ settings_menu() {
           4) AUDIO_QUALITY="256" ;;
           5) AUDIO_QUALITY="320" ;;
           *)
-            printf "%*sInvalid choice. Quality remains ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
-            sleep 1
+            printf "%*sInvalid choice. Audio quality remains unchanged" $(( (cols-62)/2 ))
+            sleep 0.5
             ;;
         esac
-        printf "\n%*sAudio quality set to: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
-        sleep 1
+        printf "\n%*sCurrently selected audio quality: ${AUDIO_QUALITY}kbps" $(( (cols - 62) / 2 ))
+        sleep 0.5
         ;;
        3)
         printf "%*sCurrent search results size: $SEARCH_RESULTS_SIZE" $(( (cols-62)/2 ))
@@ -498,6 +512,30 @@ settings_menu() {
   	  printf "\n%*sInvalid size. Must be between 1 and 50." $(( (cols - 62) / 2 ))
   	fi
   	;;
+       4)
+        center "======================================"
+        center "|   1. MP3   (libmp3lame)            |"
+        center "|   2. AAC   (native aac)            |"
+        center "|   3. OGG   (libvorbis)             |"
+        center "|   4. OPUS  (libopus)               |"
+        center "|   5. FLAC  (flac)                  |"
+        center "======================================"
+        printf "%*sEnter choice (1-5):" $(( (cols-62)/2 )) ""
+        read -r fmt_choice        
+        case "$fmt_choice" in
+          1) AUDIO_FORMAT="mp3"  ;;
+          2) AUDIO_FORMAT="aac"  ;;
+          3) AUDIO_FORMAT="ogg"  ;;
+          4) AUDIO_FORMAT="opus" ;;
+          5) AUDIO_FORMAT="flac" ;;
+          *)
+            printf "%*sInvalid choice. Audio format remains unchanged" $(( (cols-62)/2 ))
+            sleep 0.5
+            ;;
+        esac
+        printf "\n%*sCurrently selected Audio format: ${AUDIO_FORMAT}" $(( (cols - 62) / 2 ))
+        sleep 0.5
+        ;;
       *)
         printf "%*sInvalid option" $(( (cols-62)/2 ))
         ;;
