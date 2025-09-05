@@ -22,9 +22,6 @@ cols=$(tput cols)
 lines=$(tput lines)
 trap 'cols=$(tput cols); lines=$(tput lines)' WINCH # Updates the dimensions whenever the user resizes
 
-BOLD=$(tput bold)
-RESET=$(tput sgr0)
-
 center() {
     local text="$1"
     local pad=$(( (cols - ${#text}) / 2 ))
