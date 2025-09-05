@@ -17,10 +17,9 @@ LOCAL_PLAYLIST=()
 HISTORY=()
 CACHE_LIMIT=20
 LOOP_MODE=false
-SEARCH_RESULTS_SIZE=8 
+SEARCH_RESULTS_SIZE=10
 cols=$(tput cols)
 lines=$(tput lines)
-
 trap 'cols=$(tput cols); lines=$(tput lines)' WINCH # Updates the dimensions whenever the user resizes
 
 center() {
@@ -73,7 +72,7 @@ print_header() {
 print_main_header() {
     center "| [Space] Play/Pause   [←/→] Seek 5s  [↓/↑] Seek 1m   [9/0] Vol -/+   [s] Settings   [q] Quit |"
     center "| [r] Repeat   [h] Streaming History  [d] Download last streamed song  [l] Browse Local Files |"
-    hr
+    hr_text "-" "[ Last streamed song : ${LAST_QUERY:-none} ]"
 }
 
 print_browser_header() {
@@ -487,20 +486,19 @@ settings_menu() {
         ;;
        3)
         printf "%*sCurrent search results size: $SEARCH_RESULTS_SIZE" $(( (cols-62)/2 ))
-        printf "\n%*sEnter new search results size (1-25):" $(( (cols - 62) / 2 ))
+        printf "\n%*sEnter new search results size (1-50):" $(( (cols - 62) / 2 ))
   	read -r new_size
-  	if [[ "$new_size" =~ ^[0-9]+$ ]] && ((new_size >= 1 && new_size <= 25)); then
+  	if [[ "$new_size" =~ ^[0-9]+$ ]] && ((new_size >= 1 && new_size <= 50)); then
     	  SEARCH_RESULTS_SIZE=$new_size
     	  printf "\n%*sSearch results size set to: $SEARCH_RESULTS_SIZE" $(( (cols - 62) / 2 ))
   	else
-  	  printf "\n%*sInvalid size. Must be between 1 and 25." $(( (cols - 62) / 2 ))
+  	  printf "\n%*sInvalid size. Must be between 1 and 50." $(( (cols - 62) / 2 ))
   	fi
   	;;
       *)
         printf "%*sInvalid option" $(( (cols-62)/2 ))
         ;;
-    esac
-    
+    esac    
     sleep 1
   done
 }
@@ -555,8 +553,7 @@ main_loop() {
     echo
     print_main_menu
     printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) ""
-    read -r input
-    
+    read -r input    
     case "$input" in
       q)
         exit 0
@@ -603,7 +600,7 @@ main_loop() {
          sleep 1
          continue
         fi      
-        if [[ "$input" == *** ]]; then # this will handle the comma-separated playlist
+        if [[ "$input" == *** ]]; then # this will handle the *-separated playlist
           IFS='*' read -ra songs <<< "$input"
           for song in "${songs[@]}"; do
             song=$(echo "$song" | xargs) # this trims whitespace has to be here
