@@ -6,9 +6,13 @@ for cmd in yt-dlp mpv; do
   command -v $cmd >/dev/null 2>&1 || { echo "$cmd is required but not installed. Aborting."; exit 1; }
 done
 
-TARGET_DIR="$HOME/Music"
 TMP_DIR="/tmp/ytmp3"
 AUDIO_QUALITY="64"  # Default quality in kbps
+if [ -d "$HOME/Music" ]; then
+    TARGET_DIR="$HOME/Music"
+else
+    TARGET_DIR="/"
+fi
 mkdir -p "$TMP_DIR" "$TARGET_DIR"
 LAST_STREAM_URL=""
 LAST_QUERY=""
@@ -110,7 +114,7 @@ browse_local_files() {
   local start_dir="$1"
   local current_dir
   if [[ -z "$start_dir" || ! -d "$start_dir" ]]; then
-    start_dir="$HOME/Music"
+    start_dir="$TARGET_DIR"
   fi
   current_dir="$start_dir"
   while true; do
@@ -122,7 +126,6 @@ browse_local_files() {
     local items=()
     local index=1
     echo "  b. .. (return to previous directory)"
-    
     while IFS= read -r entry; do # List folders first, then files
       items+=("$entry")
     done < <(find "$current_dir" -maxdepth 1 -mindepth 1 -type d | sort)
