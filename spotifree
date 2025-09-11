@@ -221,10 +221,10 @@ browse_local_files() {
             if [ "$loop" = true ]; then
               echo "  Loop mode activated"
               echo
-              mpv --no-video --loop "$selected"
+              mpv --no-video --msg-level=ffmpeg=no --loop "$selected"
             else
             echo
-              mpv --no-video "$selected"
+              mpv --no-video --msg-level=ffmpeg=no "$selected"
             fi
             sleep 1
           fi
