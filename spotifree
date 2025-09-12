@@ -91,6 +91,7 @@ print_main_menu(){
     center "=========================[ Main Menu ]========================="
     center "  Enter a song name to start listening                         "
     center "  Enter multiple songs separated by asterisks for a playlist   "
+    center "  Add '-p' next to songs divided by * to save the playlist     "
     center "  Add '-r' at the end to loop a song (e.g., 'song -r')         "
     center "  Add '-l' at the end to show a list of results                "
     center "==============================================================="
@@ -235,11 +236,15 @@ browse_local_files() {
             fi
             sleep 1
           fi  
-        elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 	   
-           mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
-           echo "  Loaded playlist from: $(basename "$selected")"  
-           current_playlist="$(basename "$selected" .txt)" 
-           sleep 1
+        elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 
+           if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
+             play_remote_playlist "$selected"
+           else
+             mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
+             echo "  Loaded playlist from: $(basename "$selected")"  
+             current_playlist="$(basename "$selected" .txt)" 
+             sleep 1
+           fi
            continue
         else
           echo "  Unsupported file type."
@@ -551,6 +556,52 @@ settings_menu() {
   done
 }
 
+play_remote_playlist() {
+  local pl_file=$1
+  local -a songs
+  local ln  
+  while IFS= read -r ln; do # read every non-empty line except the REMOTE header
+    [[ -z $ln ]] && continue
+    songs+=("$ln")
+  done < <(tail -n +2 "$pl_file")
+  ((${#songs[@]})) || return          # empty list
+  echo "  Streaming remote playlist: $(basename "$pl_file" .txt)"  
+  for title in "${songs[@]}"; do # play each song in order
+    process_song "$title"
+  done
+}
+
+handle_playlist_input() {
+  local raw=$1
+  if [[ $raw == *" -p" ]]; then
+    raw=${raw% -p}                 # remove flag once
+    printf "%*sNew remote-playlist name: " $(( (cols-62)/2 ))
+    read -r pl_name
+    pl_name=${pl_name:-playlist}   # default name if user hits <Enter>
+    {
+      echo "REMOTE"      
+      IFS='*' read -ra songs <<< "$raw" # split on “*” and print one song per line (trim spaces)
+      for s in "${songs[@]}"; do
+        s=$(echo "$s" | xargs)
+        [[ -n $s ]] && echo "$s"
+      done
+    } > "$TARGET_DIR/${pl_name}.txt"
+    printf "\n%*sRemote playlist created at $TARGET_DIR titled :"$pl_name" " $(( (cols-62)/2 ))
+    read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
+    return 0                       # we are done – nothing else happens
+  fi  
+  if [[ $raw == *** ]]; then # 3.  normal flow: no “-p” flag – hand over to the old logic
+    IFS='*' read -ra songs <<< "$raw"
+    for song in "${songs[@]}"; do
+      song=$(echo "$song" | xargs)
+      [[ -z $song ]] && continue
+      process_song "$song"
+    done
+  else
+    process_song "$raw"
+  fi
+}
+
 process_song() {
   local query="$1"
   local loop=false
@@ -600,7 +651,7 @@ main_loop() {
     print_main_header
     echo
     print_main_menu
-    printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) ""
+    printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) 
     read -r input    
     case "$input" in
       q)
@@ -644,22 +695,13 @@ main_loop() {
         ;;
       *)
         if [[ -z "$input" ]]; then
-         printf "%*sNo input entered. Returning to menu..." $(( (cols-62)/2 ))
-         sleep 1
-         continue
-        fi      
-        if [[ "$input" == *** ]]; then # this will handle the *-separated playlist
-          IFS='*' read -ra songs <<< "$input"
-          for song in "${songs[@]}"; do
-            song=$(echo "$song" | xargs) # this trims whitespace has to be here
-            [ -z "$song" ] && continue
-            process_song "$song"
-          done
-        else
-          process_song "$input"
+          printf "%*sNo input entered. Returning to menu..." $(( (cols-62)/2 ))
+          sleep 1
+          continue
         fi
+        handle_playlist_input "$input" 
         ;;
     esac
   done
 }
-main_loop
+main_loop  
