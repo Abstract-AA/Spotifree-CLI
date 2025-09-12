@@ -84,7 +84,7 @@ print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
     center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr_text "-" "[ Current playlist : ${current_playlist:-none} ]"
+    hr_text "-" "[ Last playlist : ${current_playlist:-none} ]"
 }
 
 print_main_menu(){
@@ -164,7 +164,7 @@ browse_local_files() {
             sleep 1
             continue 2
           else
-            echo "  Playing playlist..."
+            echo "  Playing local playlist: "$current_playlist""
             echo
             mpv --no-video "${LOCAL_PLAYLIST[@]}"
           fi
@@ -173,7 +173,7 @@ browse_local_files() {
           ;;
         c)
           LOCAL_PLAYLIST=()
-          echo "  Playlist cleared."
+          echo "  Playlist cleared"
           sleep 1
           continue 2
           ;;
@@ -239,6 +239,7 @@ browse_local_files() {
         elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 
            if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
              play_remote_playlist "$selected"
+             current_playlist="$(basename "$selected" .txt)"
            else
              mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
              echo "  Loaded playlist from: $(basename "$selected")"  
@@ -321,14 +322,11 @@ search_with_list() {
 
 add_to_history() {
   local query="$1"
-  local url="$2"
-  
+  local url="$2"  
   local clean_query="${query%% -r}" # This will remove -r flag if present before adding to history
-  
   if [[ -z "${SONG_CACHE[$clean_query]}" ]]; then
     SONG_CACHE["$clean_query"]="$url"
-    HISTORY+=("$clean_query")
-    
+    HISTORY+=("$clean_query")    
     if [[ ${#HISTORY[@]} -gt $CACHE_LIMIT ]]; then
       local oldest_query="${HISTORY[0]}"
       unset SONG_CACHE["$oldest_query"]
@@ -349,8 +347,7 @@ show_history() {
     center "$((i+1)). ${HISTORY[$i]}"
   done
   center "==============================================================="
-  echo
-  
+  echo  
   printf "%*sEnter number (or any key to cancel): " $(( (cols-62)/2 )) 
   read -r choice
   if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#HISTORY[@]} ]]; then
