@@ -179,11 +179,11 @@ browse_local_files() {
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
         s)
           echo -n "  Name for the new playlist:"
-	      read -r playlist_name
-	      echo "  Playlist saved as $playlist_name"
-	      printf "%s\n" "${LOCAL_PLAYLIST[@]}" > "$current_dir/$playlist_name.txt" 
-	      sleep 1 
-	      ;;	  
+	  read -r playlist_name
+	  echo "  Playlist saved as $playlist_name"
+	  printf "%s\n" "${LOCAL_PLAYLIST[@]}" > "$current_dir/$playlist_name.txt" 
+	  sleep 1 
+	  ;;	  
         v)
           echo
           hr_text "-" "[ Playlist Contents ]" "10"
@@ -235,6 +235,11 @@ browse_local_files() {
             fi
             sleep 1
           fi
+        elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 	   
+  	   mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
+  	   echo "  Loaded playlist from: $(basename "$selected")"
+  	   sleep 1
+  	   continue
         else
           echo "  Unsupported file type."
           sleep 1
