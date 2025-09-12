@@ -82,9 +82,9 @@ print_main_header() {
 
 print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
-    center "|      [p] Play local song playlist      [v] View playlist      [c] Clear playlist           |"
+    center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr
+    hr_text "-" "[ Current playlist : ${current_playlist:-none} ]"
 }
 
 print_main_menu(){
@@ -177,6 +177,13 @@ browse_local_files() {
           continue 2
           ;;
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
+        k)
+          echo -n "  Name for the new playlist:"
+          read -r playlist_name
+          echo "  Playlist saved as $playlist_name"
+          printf "%s\n" "${LOCAL_PLAYLIST[@]}" > "$current_dir/$playlist_name.txt" 
+          sleep 1 
+          ;;	  
         v)
           echo
           hr_text "-" "[ Playlist Contents ]" "10"
@@ -227,7 +234,13 @@ browse_local_files() {
               mpv --no-video --msg-level=ffmpeg=no "$selected"
             fi
             sleep 1
-          fi
+          fi  
+        elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 	   
+           mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
+           echo "  Loaded playlist from: $(basename "$selected")"  
+           current_playlist="$(basename "$selected" .txt)" 
+           sleep 1
+           continue
         else
           echo "  Unsupported file type."
           sleep 1
@@ -374,13 +387,11 @@ download_last() {
   printf "%*sAudio Format: $AUDIO_FORMAT"   $(( (cols-62)/2 ))
   printf "\n%*sDestination:  $TARGET_DIR"    $(( (cols-62)/2 ))
   printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
-
-  # safe file-name stem
-  clean_title=$(printf '%s' "$LAST_QUERY" | tr -cd '[:alnum:][:space:]' | tr ' ' '_')
+  
+  clean_title=$(printf '%s' "$LAST_QUERY" | tr -cd '[:alnum:][:space:]' | tr ' ' '_') # safe file-name stem
   temp_file="${TMP_DIR}/${clean_title}.opus"          # we always grab opus first
   final_file="${TARGET_DIR}/${clean_title}.${AUDIO_FORMAT}"
 
-  # spinner
   (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
@@ -406,8 +417,7 @@ download_last() {
     *)    codec_args=(-c:a copy) ;;   # fallback
   esac
   
-  # spinner for conversion
-  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
+(cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
