@@ -82,7 +82,7 @@ print_main_header() {
 
 print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
-    center "|      [p] Play local song playlist      [v] View playlist      [c] Clear playlist           |"
+    center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [s] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
     hr
 }
@@ -177,6 +177,13 @@ browse_local_files() {
           continue 2
           ;;
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
+        s)
+          echo -n "  Name for the new playlist:"
+	  read -r playlist_name
+	  echo "  Playlist saved as $playlist_name"
+	  printf "%s\n" "${LOCAL_PLAYLIST[@]}" > "$current_dir/$playlist_name.txt" 
+	  sleep 1 
+	  ;;	  
         v)
           echo
           hr_text "-" "[ Playlist Contents ]" "10"
@@ -407,7 +414,7 @@ download_last() {
   esac
   
   # spinner for conversion
-  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
+(cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
