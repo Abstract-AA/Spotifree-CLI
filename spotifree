@@ -416,12 +416,9 @@ download_last() {
     flac) codec_args=(-c:a flac) ;;
     *)    codec_args=(-c:a copy) ;;   # fallback
   esac
-  
-(cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
-  LOAD_PID=$!
-  disown $LOAD_PID
-
-  ffmpeg -v quiet -stats -i "$temp_file" -vn "${codec_args[@]}" "$final_file"
+  echo
+  pad="$(printf '%*s' $(( (cols - 62) / 2 )) '')"
+  ffmpeg -v quiet -stats -i "$temp_file" -vn "${codec_args[@]}" "$final_file" 2> >(sed "s/^/${pad}/")
   conv_st=$?
 
   kill $LOAD_PID 2>/dev/null
