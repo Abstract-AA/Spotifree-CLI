@@ -387,13 +387,11 @@ download_last() {
   printf "%*sAudio Format: $AUDIO_FORMAT"   $(( (cols-62)/2 ))
   printf "\n%*sDestination:  $TARGET_DIR"    $(( (cols-62)/2 ))
   printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
-
-  # safe file-name stem
-  clean_title=$(printf '%s' "$LAST_QUERY" | tr -cd '[:alnum:][:space:]' | tr ' ' '_')
+  
+  clean_title=$(printf '%s' "$LAST_QUERY" | tr -cd '[:alnum:][:space:]' | tr ' ' '_') # safe file-name stem
   temp_file="${TMP_DIR}/${clean_title}.opus"          # we always grab opus first
   final_file="${TARGET_DIR}/${clean_title}.${AUDIO_FORMAT}"
 
-  # spinner
   (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
@@ -419,8 +417,7 @@ download_last() {
     *)    codec_args=(-c:a copy) ;;   # fallback
   esac
   
-  # spinner for conversion
-(cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
+(cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Converting to MP3..." "$padding" "" "$var"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
 
