@@ -82,9 +82,9 @@ print_main_header() {
 
 print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
-    center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [s] Save playlist  |"
+    center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr
+    hr_text "-" "[ Current playlist : ${current_playlist:-none} ]"
 }
 
 print_main_menu(){
@@ -177,7 +177,7 @@ browse_local_files() {
           continue 2
           ;;
         b) current_dir=$(dirname "$current_dir"); continue 2 ;;
-        s)
+        k)
           echo -n "  Name for the new playlist:"
           read -r playlist_name
           echo "  Playlist saved as $playlist_name"
@@ -237,7 +237,8 @@ browse_local_files() {
           fi  
         elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 	   
            mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
-           echo "  Loaded playlist from: $(basename "$selected")"
+           echo "  Loaded playlist from: $(basename "$selected")"  
+           current_playlist="$(basename "$selected" .txt)" 
            sleep 1
            continue
         else
