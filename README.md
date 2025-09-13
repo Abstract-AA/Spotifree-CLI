@@ -107,7 +107,7 @@ deactivate # Deactivate environment when done
 
 ## Playlist system
 
-Being a lightweight app, in Spotifree playlists can be made persistant via .txt files. There are two types of playlists, local and remote. As the names suggest, local playlists are essentially a text file with the file names written sequentially, e.g.:
+Being a lightweight app, in Spotifree playlists can be made persistent via .txt files. There are two types of playlists, local and remote. As the names suggest, local playlists are essentially a text file with the file names written sequentially, e.g.:
 
 ```bash
 
