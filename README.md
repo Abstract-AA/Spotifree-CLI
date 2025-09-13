@@ -149,7 +149,7 @@ The file manager and the main menu have a build in feature to create these text 
 
 ![Alt Text]()
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-43-39.png)
+![Alt Text]()
 
 
 ## Legal Disclaimer & Ethical Use
