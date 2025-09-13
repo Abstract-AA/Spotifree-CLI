@@ -121,7 +121,7 @@ Path/to/your/audiofile6.format
 ```
 
 And so on. As for the remote files, they are also .txt files, but the only diferenthe is that they require the first line to have the word "REMOTE" written in it. This is necessary for the app to recognize the distinciton between playlist types.
-After that, it is sufficient to write the names of the songs sequentially one after the other. Ideally the song names should be written with the name of the artist so that the audio file search is more inequivocal. 
+After that, it is sufficient to write the names of the songs sequentially one after the other. Ideally the song names should be written with the name of the artist so that the audio file search is more inequivocal. e.g.:
 
 ```bash
 
@@ -131,7 +131,7 @@ authorB-song2
 
 ```
 
-The file manager and the main menu have a build in feature to create these text files, but they can also be manually written and shared convinently between users of the app. 
+The file manager and the main menu have a build in feature to create these text files, but due to their simplicity, they can also be manually written and conveniently shared between users of the app. 
 
 ## Future plans
 
