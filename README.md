@@ -15,7 +15,7 @@ Spotifree is a bash script that transforms your terminal into a fully featured m
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/0e2ed9ee40135f213f7cb6365aabced99bd0da20/Screenshot%20From%202025-09-14%2001-40-24.png)
 
 ## Features
 
@@ -145,11 +145,9 @@ The file manager and the main menu have a build in feature to create these text 
 
 ## Gallery
 
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/0e2ed9ee40135f213f7cb6365aabced99bd0da20/Screenshot%20From%202025-09-14%2003-06-10.png)
 
-![Alt Text]()
-
-![Alt Text]()
+![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/0e2ed9ee40135f213f7cb6365aabced99bd0da20/Screenshot%20From%202025-09-14%2003-08-40.png)
 
 
 ## Legal Disclaimer & Ethical Use
