@@ -25,6 +25,7 @@ LOOP_MODE=false
 SEARCH_RESULTS_SIZE=10
 cols=$(tput cols)
 lines=$(tput lines)
+remote_playlist_status=false 
 trap 'cols=$(tput cols); lines=$(tput lines)' WINCH # Updates the dimensions whenever the user resizes
 
 center() {
@@ -84,7 +85,8 @@ print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
     center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr_text "-" "[ Last playlist : ${current_playlist:-none} ]"
+    hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" ) ]"
+    #hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} ]"
 }
 
 print_main_menu(){
@@ -159,20 +161,30 @@ browse_local_files() {
         -r) loop=true ;;
         -p) mark_only=true ;;
         p)  
-          if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
-    	    echo "  The playlist is empty."
-            sleep 1
-            continue 2
+          if [[ -z $selected ]]; then
+              echo "  No playlist chosen – select a *.txt file first."
+              sleep 1
+              continue 2
+          fi
+          if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
+              echo "  Playing remote playlist: $current_playlist"
+              echo
+              play_remote_playlist "$selected"
+          elif ((${#LOCAL_PLAYLIST[@]} == 0)); then
+              echo "  The local playlist is empty."
+              sleep 1
+              continue 2
           else
-            echo "  Playing local playlist: "$current_playlist""
-            echo
-            mpv --no-video "${LOCAL_PLAYLIST[@]}"
+              echo "  Playing local playlist: $current_playlist"
+              echo
+              mpv --no-video "${LOCAL_PLAYLIST[@]}"
           fi
           sleep 1
           continue 2
           ;;
         c)
           LOCAL_PLAYLIST=()
+          current_playlist=()
           echo "  Playlist cleared"
           sleep 1
           continue 2
@@ -186,19 +198,32 @@ browse_local_files() {
           sleep 1 
           ;;	  
         v)
+          if [[ -z $selected ]]; then
+             echo "  No playlist selected – highlight a *.txt file first."
+             sleep 1
+             continue 2
+          fi
           echo
-          hr_text "-" "[ Playlist Contents ]" "10"
-          if [[ ${#LOCAL_PLAYLIST[@]} -eq 0 ]]; then
-            echo "  Playlist is empty."
-          else
-            for i in "${!LOCAL_PLAYLIST[@]}"; do
-              path="${LOCAL_PLAYLIST[$i]}"
-              name=$(basename "$path")
-              printf "  %2d. %s\n" $((i+1)) "$name"
-            done
+          hr_text "-" "[ Playlist Contents ]" 10
+          if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then  # REMOTE playlist
+             mapfile -t songs < <(tail -n +2 "$selected")   # skip “REMOTE” line
+             if ((${#songs[@]} == 0)); then
+              echo "  Remote playlist is empty."
+             else
+               for i in "${!songs[@]}"; do
+                 printf "  %2d. %s\n" $((i+1)) "${songs[$i]}"
+               done
+             fi
+           else  
+             if ((${#LOCAL_PLAYLIST[@]} == 0)); then  # LOCAL playlist
+              echo "  Local playlist is empty."
+             else
+               for i in "${!LOCAL_PLAYLIST[@]}"; do
+                 printf "  %2d. %s\n" $((i+1)) "$(basename "${LOCAL_PLAYLIST[$i]}")"
+               done
+             fi
           fi
           hr
-          echo
           read -rp "  Press enter to continue..." _
           continue 2
           ;;
@@ -219,10 +244,13 @@ browse_local_files() {
           current_dir="$selected"
           break
         elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
-          if [[ "$mark_only" == true ]]; then
+          if [[ "$mark_only" == true && "$remote_playlist_status" == false ]]; then
             LOCAL_PLAYLIST+=("$selected")
             echo "  Added to playlist: $(basename "$selected")"
             sleep 0.5
+          elif [[ "$mark_only" == true && "$remote_playlist_status" == true ]]; then
+            echo "  Not possible to add local files to remote playlists. Switch to a local playlist instead."
+            sleep 1
           else
             echo
             echo "  >Now playing: $(basename "$selected")"
@@ -238,11 +266,15 @@ browse_local_files() {
           fi  
         elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 
            if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
-             play_remote_playlist "$selected"
+             echo "  Loaded remote playlist titled: $(basename "$selected")"
+             remote_playlist_status=true 
+             #play_remote_playlist "$selected"  ##this is part of the previous logic, not necessary anymore
              current_playlist="$(basename "$selected" .txt)"
+             sleep 1
            else
              mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
-             echo "  Loaded playlist from: $(basename "$selected")"  
+             remote_playlist_status=false 
+             echo "  Loaded local playlist titled: $(basename "$selected")"  
              current_playlist="$(basename "$selected" .txt)" 
              sleep 1
            fi
