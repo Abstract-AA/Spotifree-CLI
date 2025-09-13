@@ -20,7 +20,7 @@ LAST_QUERY=""
 declare -A SONG_CACHE
 LOCAL_PLAYLIST=()
 HISTORY=()
-CACHE_LIMIT=20
+CACHE_LIMIT=50
 LOOP_MODE=false
 SEARCH_RESULTS_SIZE=10
 cols=$(tput cols)
@@ -85,8 +85,7 @@ print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
     center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" ) ]"
-    #hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} ]"
+    hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none}$( [[ -n "$current_playlist" ]] && echo " | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" )" ) ]"
 }
 
 print_main_menu(){
@@ -148,7 +147,18 @@ browse_local_files() {
       fi
     done
     hr "="
-    echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+    ## this block evaluates the type of playlist and then prints the size
+    if [[ -n $selected ]] && [[ -f $selected ]]; then
+       if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then        
+          size=$(tail -n +2 "$selected" | grep -c .) # remote: count non-empty lines after the header
+          echo "  Current playlist size: ($size songs)"
+       else
+          echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+       fi
+    else
+      echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+    fi
+    ##
     echo -n "  Enter number >>> "
     read -r -a input_parts
 
@@ -417,7 +427,6 @@ download_last() {
     sleep 0.5
     return 1
   }
-
   printf "%*sAudio Format: $AUDIO_FORMAT"   $(( (cols-62)/2 ))
   printf "\n%*sDestination:  $TARGET_DIR"    $(( (cols-62)/2 ))
   printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
@@ -426,22 +435,18 @@ download_last() {
   temp_file="${TMP_DIR}/${clean_title}.opus"          # we always grab opus first
   final_file="${TARGET_DIR}/${clean_title}.${AUDIO_FORMAT}"
 
-  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
+  (cols=$(tput cols); padding=$(( (cols - 62) / 2 )); while :; do for var in / - \\ \|; do printf "\r%*s%s Downloading & Converting: %s, please wait..." "$padding" "" "$var" "$LAST_QUERY"; sleep 0.1; done; done) &
   LOAD_PID=$!
   disown $LOAD_PID
-
   yt-dlp --quiet --no-warnings --extract-audio --audio-format opus \
          --audio-quality "${AUDIO_QUALITY}k" -o "$temp_file" "$LAST_STREAM_URL"
   dl_st=$?
-
-  kill $LOAD_PID 2>/dev/null
   if [ $dl_st -ne 0 ]; then
     printf "%*sDownload failed!" $(( (cols-62)/2 ))
     rm -f "$temp_file"
     read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
     return 1
-  fi
-  
+  fi  
   case "${AUDIO_FORMAT,,}" in      # --------- ffmpeg switch-table ---------
     mp3)  codec_args=(-c:a libmp3lame -b:a "${AUDIO_QUALITY}k") ;;
     aac)  codec_args=(-c:a aac -b:a "${AUDIO_QUALITY}k") ;;
@@ -450,19 +455,19 @@ download_last() {
     flac) codec_args=(-c:a flac) ;;
     *)    codec_args=(-c:a copy) ;;   # fallback
   esac
-  echo
-  pad="$(printf '%*s' $(( (cols - 62) / 2 )) '')"
-  ffmpeg -v quiet -stats -i "$temp_file" -vn "${codec_args[@]}" "$final_file" 2> >(sed "s/^/${pad}/")
-  conv_st=$?
-
+  ffmpeg -v quiet -nostats -hide_banner -i "$temp_file" -vn "${codec_args[@]}" "$final_file"
+  conv_st=$?  
   kill $LOAD_PID 2>/dev/null
+  wait $LOAD_PIDR 2>/dev/null  
   if [ $conv_st -eq 0 ]; then
+    echo
     printf "\n%*sConversion complete!" $(( (cols-62)/2 ))
     rm -f "$temp_file"
     printf "\n%*sSaved: "$final_file" " $(( (cols-62)/2 )) 
     read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
     return 0
   else
+    echo
     printf "\n%*sConversion failed!" $(( (cols-62)/2 ))
     rm -f "$temp_file" "$final_file"
     read -n1 -srp "$(printf "\n%*sPress enter to continue…" $(( (cols-62)/2 )))"
@@ -482,7 +487,6 @@ settings_menu() {
     center "=============================================================="
     printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
     printf "\n%*s>>>" $(( (cols-62)/2 )) 
-    ##echo -n ">>> "
     read -r reply    
     case "$reply" in
       q)
@@ -680,7 +684,7 @@ main_loop() {
     print_main_header
     echo
     print_main_menu
-    printf "%*s>>> Enter your choice: " $(( (cols-62)/2 )) 
+    printf "%*s>>> " $(( (cols-62)/2 )) 
     read -r input    
     case "$input" in
       q)

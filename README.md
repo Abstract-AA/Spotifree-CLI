@@ -11,18 +11,18 @@
 
 ## Overview
 
-Spotifree is a bash script that transforms your terminal into a music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. The project aims to integrate streaming with local audio files. 
+Spotifree is a bash script that transforms your terminal into a fully featured music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. The project aims to integrate streaming with local audio files. 
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-30-14.png)
+![Alt Text]()
 
 ## Features
 
 - **Instant Search** - Play any song with a single command
-- **Download Audio files** - Any song can be downloaded in mp3, ogg, aac, OPUS and FLAC. Audio quality in kbps can also be changed
-- **Playlists** - Create playlists by writing multiple song names separated by asterisks or by using the "-p" flag when file browsing
-- **Local File Browser** - Any local audio files can also be played
+- **Download Audio files** - Songs can be downloaded in mp3, ogg, aac, OPUS and FLAC. Variable kbps is supported
+- **Playlists** - Fully featured playlist system via .txt files
+- **File Browser** - Local audio files can also be played
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
 - **Lightweight** - Less than 1 mb, no GUI overhead or resource-heavy apps
@@ -105,9 +105,37 @@ deactivate # Deactivate environment when done
 
 ```
 
+## Playlist system
+
+Being a lightweight app, in Spotifree playlists can be made persistent via .txt files. There are two types of playlists, local and remote. As the names suggest, local playlists are essentially a text file with the file names written sequentially, e.g.:
+
+```bash
+
+Path/to/your/audiofile1.format
+Path/to/your/audiofile2.format
+Path/to/your/audiofile3.format
+Path/to/your/audiofile4.format
+Path/to/your/audiofile5.format
+Path/to/your/audiofile6.format
+
+```
+
+And so on. As for the remote files, they are also .txt files, but the only diferenthe is that they require the first line to have the word "REMOTE" written in it. This is necessary for the app to recognize the distinciton between playlist types.
+After that, it is sufficient to write the names of the songs sequentially one after the other. Ideally the song names should be written with the name of the artist so that the audio file search is more inequivocal. e.g.:
+
+```bash
+
+REMOTE
+authorA-song1
+authorB-song2
+
+```
+
+The file manager and the main menu have a build in feature to create these text files, but due to their simplicity, they can also be manually written and conveniently shared between users of the app. 
+
 ## Future plans
 
-- text file based shareable playlist feature
+- simplified isntall script
 
 - progress bar that updates as the song plays
 
@@ -117,9 +145,9 @@ deactivate # Deactivate environment when done
 
 ## Gallery
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-29-06.png)
+![Alt Text]()
 
-![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-39-37.png)
+![Alt Text]()
 
 ![Alt Text](https://github.com/Abstract-AA/Spotifree-CLI/blob/d5339c58c37a88eeba9174d9f15d23c9a6ec8de5/Screenshot%20From%202025-09-06%2001-43-39.png)
 
