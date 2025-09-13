@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#Spotifree by Abstract-AA
 
 for cmd in yt-dlp mpv; do
   command -v $cmd >/dev/null 2>&1 || { echo "$cmd is required but not installed. Aborting."; exit 1; }
@@ -170,27 +170,39 @@ browse_local_files() {
       case "$arg" in
         -r) loop=true ;;
         -p) mark_only=true ;;
-        p)  
-          if [[ -z $selected ]]; then
+        p)
+          [[ -z $selected ]] && {
               echo "  No playlist chosen – select a *.txt file first."
-              sleep 1
-              continue 2
-          fi
-          if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
+              sleep 1; continue 2
+          } 
+          if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then # remote playlist
               echo "  Playing remote playlist: $current_playlist"
-              echo
               play_remote_playlist "$selected"
-          elif ((${#LOCAL_PLAYLIST[@]} == 0)); then
+              sleep 1; continue 2
+          fi 
+          if ((${#LOCAL_PLAYLIST[@]} == 0)); then # local
               echo "  The local playlist is empty."
-              sleep 1
-              continue 2
-          else
-              echo "  Playing local playlist: $current_playlist"
+              sleep 1; continue 2
+              fi 
+             missing=false  #  check every path before we start
+          for f in "${LOCAL_PLAYLIST[@]}"; do
+              [[ -e $f ]] && continue
+              printf "\n%*s  Missing or broken file: $(basename "$f")"
+              missing=true
+          done
+          if $missing; then
               echo
-              mpv --no-video "${LOCAL_PLAYLIST[@]}"
+              echo
+              echo "  Playlist contains missing or broken files – it has been cleared." 
+              read -n 1 -s -r -p "  Press any key to continue..."
+              LOCAL_PLAYLIST=()
+              current_playlist=""
+              continue 2
           fi
-          sleep 1
-          continue 2
+          echo "  Playing local playlist: $current_playlist"   # all good – play
+          echo
+          mpv --no-video "${LOCAL_PLAYLIST[@]}"
+          sleep 1; continue 2
           ;;
         c)
           LOCAL_PLAYLIST=()
@@ -485,7 +497,7 @@ settings_menu() {
     center "3. Current search list size: ${SEARCH_RESULTS_SIZE}"
     center "4. Current download file format: $AUDIO_FORMAT"
     center "=============================================================="
-    printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
+    printf "%*sEnter option (or q to return to main menu)" $(( (cols-62)/2 )) 
     printf "\n%*s>>>" $(( (cols-62)/2 )) 
     read -r reply    
     case "$reply" in
