@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#Spotifree by Abstract-AA
 
 for cmd in yt-dlp mpv; do
   command -v $cmd >/dev/null 2>&1 || { echo "$cmd is required but not installed. Aborting."; exit 1; }
@@ -200,6 +200,7 @@ browse_local_files() {
               continue 2
           fi
           echo "  Playing local playlist: $current_playlist"   # all good – play
+          echo
           mpv --no-video "${LOCAL_PLAYLIST[@]}"
           sleep 1; continue 2
           ;;
@@ -496,7 +497,7 @@ settings_menu() {
     center "3. Current search list size: ${SEARCH_RESULTS_SIZE}"
     center "4. Current download file format: $AUDIO_FORMAT"
     center "=============================================================="
-    printf "%*sEnter option number to change (q to return to main menu)" $(( (cols-62)/2 )) 
+    printf "%*sEnter option (or q to return to main menu)" $(( (cols-62)/2 )) 
     printf "\n%*s>>>" $(( (cols-62)/2 )) 
     read -r reply    
     case "$reply" in
