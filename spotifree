@@ -2,6 +2,8 @@
 
 #Spotifree by Abstract-AA
 
+set -e
+
 for cmd in yt-dlp mpv; do
   command -v $cmd >/dev/null 2>&1 || { echo "$cmd is required but not installed. Aborting."; exit 1; }
 done
@@ -288,19 +290,27 @@ browse_local_files() {
           fi  
         elif [[ -f "$selected" && "$selected" =~ \.txt$ ]]; then 
            if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then
-             echo "  Loaded remote playlist titled: $(basename "$selected")"
-             remote_playlist_status=true 
-             #play_remote_playlist "$selected"  ##this is part of the previous logic, not necessary anymore
-             current_playlist="$(basename "$selected" .txt)"
-             sleep 1
-           else
-             mapfile -t LOCAL_PLAYLIST < "$selected" # Load playlist from text file
-             remote_playlist_status=false 
-             echo "  Loaded local playlist titled: $(basename "$selected")"  
-             current_playlist="$(basename "$selected" .txt)" 
-             sleep 1
-           fi
-           continue
+             mapfile -t songs < <(tail -n +2 "$selected" | grep -v '^\s*$')    # remote playlist
+             if ((${#songs[@]} == 0)); then
+               echo "  Remote playlist is empty – nothing to play."
+               selected=""; current_playlist=""; remote_playlist_status=false
+               sleep 1; continue 2
+             fi
+             echo "  Loaded remote playlist titled: $(basename "$selected" .txt)"
+             remote_playlist_status=true
+             current_playlist=$(basename "$selected" .txt)
+            else    
+              mapfile -t LOCAL_PLAYLIST < "$selected" # local playlist
+              if ((${#LOCAL_PLAYLIST[@]} == 0)); then
+                echo "  Local playlist is empty – nothing to play."
+                selected=""; current_playlist=""; remote_playlist_status=false
+                sleep 1; continue 2
+              fi
+              echo "  Loaded local playlist titled: $(basename "$selected" .txt)"
+              remote_playlist_status=false
+              current_playlist=$(basename "$selected" .txt)
+          fi
+          sleep 1; continue 2
         else
           echo "  Unsupported file type."
           sleep 1
@@ -608,8 +618,11 @@ play_remote_playlist() {
   while IFS= read -r ln; do # read every non-empty line except the REMOTE header
     [[ -z $ln ]] && continue
     songs+=("$ln")
-  done < <(tail -n +2 "$pl_file")
-  ((${#songs[@]})) || return          # empty list
+  done < <(tail -n +2 "$pl_file")  
+  if ((${#songs[@]} == 0)); then
+    echo "  Playlist $(basename "$pl_file" .txt) is empty, quitting."
+    return 0 || true 
+  fi
   echo "  Streaming remote playlist: $(basename "$pl_file" .txt)"  
   for title in "${songs[@]}"; do # play each song in order
     process_song "$title"
