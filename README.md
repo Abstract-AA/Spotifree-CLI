@@ -135,6 +135,8 @@ The file manager and the main menu have a build in feature to create these text 
 
 ## Future plans
 
+- simplified isntall script
+
 - progress bar that updates as the song plays
 
 - audio bars
