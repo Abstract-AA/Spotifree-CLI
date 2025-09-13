@@ -209,6 +209,7 @@ browse_local_files() {
         c)
           LOCAL_PLAYLIST=()
           current_playlist=()
+          selected=()
           echo "  Playlist cleared"
           sleep 1
           continue 2
