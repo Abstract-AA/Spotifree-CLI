@@ -20,9 +20,9 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 ## Features
 
 - **Instant Search** - Play any song with a single command
-- **Download Audio files** - Any song can be downloaded in mp3, ogg, aac, OPUS and FLAC. Audio quality in kbps can also be changed
+- **Download Audio files** - Songs can be downloaded in mp3, ogg, aac, OPUS and FLAC. Variable kbps is supported
 - **Playlists** - Fully featured playlist system via .txt files
-- **Local File Browser** - Any local audio files can also be played
+- **File Browser** - Local audio files can also be played
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
 - **Playback Controls** - Completely integrated MPV controls (pause/seek/volume/loop)
 - **Lightweight** - Less than 1 mb, no GUI overhead or resource-heavy apps
