@@ -85,8 +85,7 @@ print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
     center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
-    hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" ) ]"
-    #hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none} ]"
+    hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none}$( [[ -n "$current_playlist" ]] && echo " | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" )" ) ]"
 }
 
 print_main_menu(){
@@ -148,7 +147,18 @@ browse_local_files() {
       fi
     done
     hr "="
-    echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+    ## this block evaluates the type of playlist and then prints the size
+    if [[ -n $selected ]] && [[ -f $selected ]]; then
+       if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then        
+          size=$(tail -n +2 "$selected" | grep -c .) # remote: count non-empty lines after the header
+          echo "  Current playlist size: ($size songs)"
+       else
+          echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+       fi
+    else
+      echo "  Current playlist size: (${#LOCAL_PLAYLIST[@]} files)"
+    fi
+    ##
     echo -n "  Enter number >>> "
     read -r -a input_parts
 
@@ -417,7 +427,6 @@ download_last() {
     sleep 0.5
     return 1
   }
-
   printf "%*sAudio Format: $AUDIO_FORMAT"   $(( (cols-62)/2 ))
   printf "\n%*sDestination:  $TARGET_DIR"    $(( (cols-62)/2 ))
   printf "\n%*sAudio Quality: ${AUDIO_QUALITY}kbps" $(( (cols-62)/2 ))
