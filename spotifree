@@ -424,7 +424,7 @@ show_history() {
     case "$mode" in
       1)
         clear && print_header && print_main_header && echo && print_main_menu 
-        printf "%*sPlaying: $selected_query" $(( (cols-62)/2 )) && echo
+        printf "%*s  Playing: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" false
