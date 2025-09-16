@@ -11,7 +11,7 @@
 
 ## Overview
 
-Spotifree is a bash script that transforms your terminal into a fully featured music streaming platform without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow. It can perform a non specific search for songs, so the song name can have typos and parts of the lyrics are also acceptable as inputs. The project aims to integrate streaming with local audio files. 
+Spotifree is a Bash script that transforms your terminal into a fully featured music streaming platform—without ads or distractions. Designed for keyboard-centric users who want instant music without leaving their workflow, it supports non-specific search for songs (tolerant to typos and partial lyrics). The project also aims to integrate streaming with local audio files and playlist management.
 
 For a smooth streaming experience, the latest verion of yt-dlp is usually required.
 
@@ -20,7 +20,7 @@ For a smooth streaming experience, the latest verion of yt-dlp is usually requir
 ## Features
 
 - **Instant Search** - Play any song with a single command
-- **Download Audio files** - Songs can be downloaded in mp3, ogg, aac, OPUS and FLAC. Variable kbps is supported
+- **Download Audio files** - Supports MP3, OGG, AAC, OPUS, and FLAC. Variable bitrate supported
 - **Playlists** - Fully featured playlist system via .txt files
 - **File Browser** - Local audio files can also be played
 - **Repeat Mode** - Replay tracks without re-searching (cached playback)
@@ -107,7 +107,10 @@ deactivate # Deactivate environment when done
 
 ## Playlist system
 
-Being a lightweight app, in Spotifree playlists can be made persistent via .txt files. There are two types of playlists, local and remote. As the names suggest, local playlists are essentially a text file with the file names written sequentially, e.g.:
+Spotifree uses lightweight .txt files for persistent playlists. There are two types: 
+
+1. Local Playlists
+These are text files listing the full paths to local audio files:
 
 ```bash
 
@@ -120,8 +123,9 @@ Path/to/your/audiofile6.format
 
 ```
 
-And so on. As for the remote files, they are also .txt files, but the only diferenthe is that they require the first line to have the word "REMOTE" written in it. This is necessary for the app to recognize the distinciton between playlist types.
-After that, it is sufficient to write the names of the songs sequentially one after the other. Ideally the song names should be written with the name of the artist so that the audio file search is more inequivocal. e.g.:
+2. Remote Playlists
+
+These start with the keyword REMOTE on the first line, followed by song names or search terms:
 
 ```bash
 
@@ -130,18 +134,19 @@ authorA-song1
 authorB-song2
 
 ```
+Tip: Including the artist name improves search accuracy. 
 
-The file manager and the main menu have a build in feature to create these text files, but due to their simplicity, they can also be manually written and conveniently shared between users of the app. 
+The file manager and main menu include features to create these files, but you can also write and share them manually.
 
 ## Future plans
 
-- simplified isntall script
+- Simplified install script
 
-- progress bar that updates as the song plays
+- Progress bar that updates as the song plays
 
-- audio bars
+- Audio visualizer (bars)
 
-- general interface improvements
+- General interface improvements
 
 ## Gallery
 
