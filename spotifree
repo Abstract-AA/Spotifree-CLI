@@ -752,7 +752,6 @@ main_loop() {
         settings_menu
         ;;
       l)
-        #browse_local_files "$HOME/Music"
         browse_local_files
         ;;
       *)
