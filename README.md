@@ -110,6 +110,7 @@ deactivate # Deactivate environment when done
 Spotifree uses lightweight .txt files for persistent playlists. There are two types: 
 
 1. Local Playlists
+
 These are text files listing the full paths to local audio files:
 
 ```bash
@@ -118,8 +119,7 @@ Path/to/your/audiofile1.format
 Path/to/your/audiofile2.format
 Path/to/your/audiofile3.format
 Path/to/your/audiofile4.format
-Path/to/your/audiofile5.format
-Path/to/your/audiofile6.format
+...
 
 ```
 
@@ -132,6 +132,9 @@ These start with the keyword REMOTE on the first line, followed by song names or
 REMOTE
 authorA-song1
 authorB-song2
+authorC-song3
+authorC-song4
+...
 
 ```
 Tip: Including the artist name improves search accuracy. 
