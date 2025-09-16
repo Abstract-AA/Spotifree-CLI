@@ -150,7 +150,7 @@ browse_local_files() {
     done
     hr "="
     ## this block evaluates the type of playlist and then prints the size
-    if [[ -n $selected ]] && [[ -f $selected ]]; then
+    if [[ -n $selected ]] && [[ -f $selected ]] && [[ $selected == *.txt ]]; then
        if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then        
           size=$(tail -n +2 "$selected" | grep -c .) # remote: count non-empty lines after the header
           echo "  Current playlist size: ($size songs)"
