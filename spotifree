@@ -16,6 +16,7 @@ if [ -d "$HOME/Music" ]; then
 else
     TARGET_DIR="/"
 fi
+LAST_BROWSE_DIR="$HOME/Music"
 mkdir -p "$TMP_DIR" "$TARGET_DIR"
 LAST_STREAM_URL=""
 LAST_QUERY=""
@@ -116,7 +117,7 @@ play_stream() {
 }
 
 browse_local_files() {
-  local start_dir="$1"
+  local start_dir=${1:-$LAST_BROWSE_DIR}
   local current_dir
   if [[ -z "$start_dir" || ! -d "$start_dir" ]]; then
     start_dir="$TARGET_DIR"
@@ -267,6 +268,7 @@ browse_local_files() {
         selected="${items[$((num - 1))]}"
         if [[ -d "$selected" ]]; then
           current_dir="$selected"
+          LAST_BROWSE_DIR="$current_dir"
           break
         elif [[ -f "$selected" && "$selected" =~ \.(mp3|m4a|opus|flac|wav|ogg)$ ]]; then
           if [[ "$mark_only" == true && "$remote_playlist_status" == false ]]; then
@@ -750,7 +752,7 @@ main_loop() {
         settings_menu
         ;;
       l)
-        browse_local_files "$HOME/Music"
+        browse_local_files
         ;;
       *)
         if [[ -z "$input" ]]; then
