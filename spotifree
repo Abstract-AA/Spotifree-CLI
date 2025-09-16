@@ -86,7 +86,7 @@ print_main_header() {
 
 print_browser_header() {
     center "| [Space] Play/Pause      [←/→] Seek 5s      [↓/↑] Seek 1m       [9/0] Vol -/+       [q] Quit|"
-    center "| [p] Play local playlist    [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
+    center "| [p] Play loaded playlist   [v] View playlist     [c] Clear playlist     [k] Save playlist  |"
     center "| [# + -r] Loop song    [# + -p] Add to playlist (e.g. '1 -p')   [#,#] Serial play (e.g. 1,4)|"
     hr_text "-" "[ Currently loaded playlist : ${current_playlist:-none}$( [[ -n "$current_playlist" ]] && echo " | $( [[ "$remote_playlist_status" == true ]] && echo "Remote" || echo "Local" )" ) ]"
 }
@@ -424,7 +424,7 @@ show_history() {
     case "$mode" in
       1)
         clear && print_header && print_main_header && echo && print_main_menu 
-        printf "%*sPlaying: $selected_query" $(( (cols-62)/2 )) && echo
+        printf "%*s  Playing: $selected_query" $(( (cols-62)/2 )) && echo
         LAST_STREAM_URL="${SONG_CACHE[$selected_query]}"
         LAST_QUERY="$selected_query"
         play_stream "${SONG_CACHE[$selected_query]}" false
@@ -626,8 +626,8 @@ play_remote_playlist() {
     echo "  Playlist $(basename "$pl_file" .txt) is empty, quitting."
     return 0 || true 
   fi
-  echo "  Streaming remote playlist: $(basename "$pl_file" .txt)"  
   for title in "${songs[@]}"; do # play each song in order
+    echo
     process_song "$title"
   done
 }
