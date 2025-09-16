@@ -174,11 +174,10 @@ browse_local_files() {
         -r) loop=true ;;
         -p) mark_only=true ;;
         p)
-          [[ -z $selected ]] && {
-              echo "  No playlist chosen – select a *.txt file first."
-              sleep 1; continue 2
-          } 
-          if [[ $(head -n 1 "$selected") == "REMOTE" ]]; then # remote playlist
+          if [[ -z $selected ]]; then
+             echo "  No playlist chosen – select a *.txt file first."
+             sleep 1; continue 2
+          elif [[ $(head -n 1 "$selected") == "REMOTE" ]]; then # remote playlist
               echo "  Playing remote playlist: $current_playlist"
               play_remote_playlist "$selected"
               sleep 1; continue 2
@@ -229,7 +228,7 @@ browse_local_files() {
           ;;	  
         v)
           if [[ -z $selected ]]; then
-             echo "  No playlist selected – highlight a *.txt file first."
+             echo "  No playlist selected – load a *.txt file first."
              sleep 1
              continue 2
           fi
