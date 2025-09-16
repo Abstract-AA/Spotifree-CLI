@@ -215,7 +215,11 @@ browse_local_files() {
           sleep 1
           continue 2
           ;;
-        b) current_dir=$(dirname "$current_dir"); continue 2 ;;
+        b)
+          current_dir=$(dirname "$current_dir")
+          LAST_BROWSE_DIR="$current_dir"
+          continue 2 
+          ;;
         k)
           echo -n "  Name for the new playlist:"
           read -r playlist_name
